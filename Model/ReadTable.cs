@@ -12,7 +12,7 @@ namespace DummyDB_5.Model
     {
         public static Table Read(TableScheme scheme, string path)
         {
-            string[] data = File.ReadAllLines(Directory.GetCurrentDirectory() + path);
+            string[] data = File.ReadAllLines(path);
             Table table = new Table();
             table.Rows = new List<Row>();
             table.Scheme = scheme;

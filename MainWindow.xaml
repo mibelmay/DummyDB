@@ -10,11 +10,11 @@
     <Window.DataContext>
         <vm:MainViewModel/>
     </Window.DataContext>
-    
+
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="27*"/>
-            <RowDefinition Height="24*"/>
+            <RowDefinition Height="24.018"/>
             <RowDefinition Height="6*"/>
             <RowDefinition Height="358*"/>
             <RowDefinition Height="18.723"/>
@@ -43,6 +43,7 @@
         <TreeView Grid.Column="1" Grid.Row="3">
             <TreeViewItem x:Name="dataTree" IsExpanded="True" x:FieldModifier="public"/>
         </TreeView>
-        <DataGrid Grid.Column="3" Grid.Row="3" Name="DataTable" AutoGenerateColumns="False"/>
+        <TextBox x:Name="TextShow" Grid.Column="1" Margin="0,0,253,0" Grid.Row="4"/>
+        <DataGrid Grid.Column="3" Grid.Row="3" Name="DataTable" AutoGenerateColumns="True"/>
     </Grid>
 </Window>
