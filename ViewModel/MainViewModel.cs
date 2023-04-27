@@ -18,23 +18,18 @@ namespace DummyDB_5.ViewModel
 {
     public class MainViewModel : ViewModel
     {
-        private bool _isSelected;
-        public bool IsSelected
+        private Dictionary<TableScheme, Table> schemesAndTablesDict = new Dictionary<TableScheme, Table>();
+        private List<TableScheme> schemes;
+        private string _message;
+        public string Message
         {
-            get { return _isSelected; }
-            set
+            get { return _message; }
+            set 
             {
-                if (value != _isSelected)
-                {
-                    _isSelected = value;
-                    this.OnPropertyChanged("IsSelected");
-                }
+                _message = value;
+                OnPropertyChanged();    
             }
         }
-
-
-        private Dictionary<TableScheme, Table> schemesAndTablesDict = new Dictionary<TableScheme, Table>();
-
         public ICommand OpenSourceClick => new CommandDelegate(parameter =>
         {
             FolderBrowserDialog openFolderDialog = new FolderBrowserDialog();
@@ -58,17 +53,24 @@ namespace DummyDB_5.ViewModel
                     string[] line = file.Split("\\");
                     treeItem.Header = (line[line.Length - 1]).Substring(0, line[line.Length - 1].Length-5);
                     treeItem.Selected += TableTreeSelected;
-                    treeItem.Unselected += TableTreeUnselected;
+                    //treeItem.Unselected += TableTreeUnselected;
 
                     foreach (Column key in scheme.Columns)
                     {
                         treeItem.Items.Add(key.Name + "---" + key.Type);
                     }
                     ((MainWindow)System.Windows.Application.Current.MainWindow).dataTree.Items.Add(treeItem);
+                    
                 }
                 
             }
+            Message = "Все таблицы успешно загружены";
         });
+
+        public void SchemeTreeSelected(object sender, RoutedEventArgs e)
+        {
+            
+        }
 
 
         private class RowAdapter
@@ -115,10 +117,10 @@ namespace DummyDB_5.ViewModel
             }
         }
 
-        private void TableTreeUnselected(object sender, RoutedEventArgs e)
-        {
-            ((MainWindow)System.Windows.Application.Current.MainWindow).DataTable.Columns.Clear();
-        }
+        //private void TableTreeUnselected(object sender, RoutedEventArgs e)
+        //{
+        //    ((MainWindow)System.Windows.Application.Current.MainWindow).DataTable.Columns.Clear();
+        //}
     }
 
 }
