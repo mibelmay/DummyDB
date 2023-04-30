@@ -25,8 +25,8 @@ namespace DummyDB_5.ViewModel
         public DataTable DataTable
         {
             get { return _dataTable; }
-            set 
-            { 
+            set
+            {
                 _dataTable = value;
                 OnPropertyChanged();
             }
@@ -69,7 +69,7 @@ namespace DummyDB_5.ViewModel
 
                     foreach (Column key in scheme.Columns)
                     {
-                        treeItem.Items.Add(key.Name + "---" + key.Type);
+                        treeItem.Items.Add(key.Name + " | " + key.Type);
                     }
                     ((MainWindow)System.Windows.Application.Current.MainWindow).dataTree.Items.Add(treeItem);
                     
@@ -79,16 +79,6 @@ namespace DummyDB_5.ViewModel
             Message = "Все таблицы успешно загружены";
         });
 
-        public void SchemeTreeSelected(object sender, RoutedEventArgs e)
-        {
-            
-        }
-
-
-        private class RowAdapter
-        {
-            public List<Object> Data { get; set; }
-        }
 
         private void TableTreeSelected(object sender, RoutedEventArgs e)
         {
@@ -120,7 +110,7 @@ namespace DummyDB_5.ViewModel
 
         //private void TableTreeUnselected(object sender, RoutedEventArgs e)
         //{
-        //    ((MainWindow)System.Windows.Application.Current.MainWindow).DataTable.Columns.Clear();
+        //    ((MainWindow)System.Windows.Application.Current.MainWindow).dataGrid.Columns.Clear();
         //}
     }
 
