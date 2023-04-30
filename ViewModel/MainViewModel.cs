@@ -13,13 +13,24 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Controls;
 using System.Data;
+using System.Drawing.Drawing2D;
 
 namespace DummyDB_5.ViewModel
 {
     public class MainViewModel : ViewModel
     {
-        private Dictionary<TableScheme, Table> schemesAndTablesDict = new Dictionary<TableScheme, Table>();
-        private List<TableScheme> schemes;
+        private Dictionary<TableScheme, Table> schemeTablePairs = new Dictionary<TableScheme, Table>();
+        private List<TableScheme> schemes = new List<TableScheme>();
+        private DataTable _dataTable;
+        public DataTable DataTable
+        {
+            get { return _dataTable; }
+            set 
+            { 
+                _dataTable = value;
+                OnPropertyChanged();
+            }
+        }
         private string _message;
         public string Message
         {
@@ -47,8 +58,9 @@ namespace DummyDB_5.ViewModel
                 {
                     string pathTable = file.Replace("json", "csv");
                     TableScheme scheme = TableScheme.ReadFile(file);
+                    schemes.Add(scheme);
                     Table table = ReadTable.Read(scheme, pathTable);
-                    schemesAndTablesDict.Add(scheme, table);
+                    schemeTablePairs.Add(scheme, table);
                     TreeViewItem treeItem = new TreeViewItem();
                     string[] line = file.Split("\\");
                     treeItem.Header = (line[line.Length - 1]).Substring(0, line[line.Length - 1].Length-5);
@@ -80,41 +92,30 @@ namespace DummyDB_5.ViewModel
 
         private void TableTreeSelected(object sender, RoutedEventArgs e)
         {
-            ((MainWindow)System.Windows.Application.Current.MainWindow).DataTable.Columns.Clear();
+            ((MainWindow)System.Windows.Application.Current.MainWindow).dataGrid.Columns.Clear();
+            DataTable dataTable = new DataTable();
             string tableName = ((TreeViewItem)sender).Header.ToString();
-
-            foreach (var schemeAndTable in schemesAndTablesDict)
+            foreach(var pair in schemeTablePairs)
             {
-                if (schemeAndTable.Key.Name == tableName)
+                if(pair.Key.Name == tableName)
                 {
-
-                    List<RowAdapter> rowsData = new List<RowAdapter>();
-
-                    foreach (Row row in schemeAndTable.Value.Rows)
+                    foreach(Column column in pair.Key.Columns)
                     {
-                        List<object> rowData = new List<object>();
-                        foreach (object cell in row.Data.Values)
-                        {
-                            rowData.Add(cell);
-                        }
-                        rowsData.Add(new RowAdapter() { Data = rowData });
+                        dataTable.Columns.Add(column.Name);
                     }
-
-                    ((MainWindow)System.Windows.Application.Current.MainWindow).DataTable.ItemsSource = rowsData;
-
-                    for (int i = 0; i < schemeAndTable.Key.Columns.Count; i++)
+                    for(int i = 0; i < pair.Value.Rows.Count; i++)
                     {
-                        DataGridTextColumn tableTextColumn = new DataGridTextColumn()
+                        DataRow newRow = dataTable.NewRow();
+                        foreach (var rowPair in pair.Value.Rows[i].Data)
                         {
-                            Header = schemeAndTable.Key.Columns[i].Name,
-                            Binding = new System.Windows.Data.Binding($"Data[{i}]")
-                        };
-
-                        ((MainWindow)System.Windows.Application.Current.MainWindow).DataTable.Columns.Add(tableTextColumn);
+                            newRow[rowPair.Key.Name] = rowPair.Value;
+                        }
+                        dataTable.Rows.Add(newRow);
                     }
                     break;
                 }
             }
+            DataTable = dataTable;
         }
 
         //private void TableTreeUnselected(object sender, RoutedEventArgs e)

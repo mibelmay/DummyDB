@@ -44,12 +44,12 @@
             <TreeViewItem x:Name="dataTree" IsExpanded="True" x:FieldModifier="public"/>
         </TreeView>
         <TextBlock Text="{Binding Message}" x:Name="TextShow" Grid.Column="1" Margin="0,0,10,0" Grid.Row="4" d:LayoutOverrides="HorizontalAlignment"/>
-        <DataGrid Grid.Column="3" Grid.Row="3" Name="DataTable" AutoGenerateColumns="False" Height="179" VerticalAlignment="Top"/>
+        <DataGrid Name="dataGrid" Grid.Column="3" Grid.Row="3" ItemsSource="{Binding DataTable}" AutoGenerateColumns="True" Height="179" VerticalAlignment="Top"/>
         <TextBlock Grid.Column="3" Grid.Row ="3" Text="Scheme" Margin="0,184,0,0" Height="20" VerticalAlignment="Top">
             <TextBlock.Background>
                 <SolidColorBrush Color="Lavender"/>
             </TextBlock.Background>
         </TextBlock>
-        <DataGrid Name ="Meta" AutoGenerateColumns="False" Grid.Column="3" Margin="0,204,0,0" Grid.Row="3" Height="144" VerticalAlignment="Top"/>
+        <DataGrid Name ="Scheme" AutoGenerateColumns="False" Grid.Column="3" Margin="0,204,0,0" Grid.Row="3" Height="144" VerticalAlignment="Top"/>
     </Grid>
 </Window>
