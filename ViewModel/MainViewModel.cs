@@ -15,6 +15,7 @@ using System.Windows.Controls;
 using System.Data;
 using System.Drawing.Drawing2D;
 using System.Collections;
+using System.Drawing;
 
 namespace DummyDB_5.ViewModel
 {
@@ -44,11 +45,18 @@ namespace DummyDB_5.ViewModel
         }
         public ICommand OpenSourceClick => new CommandDelegate(parameter =>
         {
+            ((MainWindow)System.Windows.Application.Current.MainWindow).dataTree.Items.Clear();
             FolderBrowserDialog openFolderDialog = new FolderBrowserDialog();
-            string folderPath = "";
-            if (openFolderDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+            string? folderPath = "";
+        
+            if ( openFolderDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
             {
                 folderPath = openFolderDialog.SelectedPath;
+            }
+            if (folderPath == "")
+            {
+                Message = "Вы не выбрали папку";
+                return;
             }
             string[] splits = folderPath.Split('\\');
             string folderName = splits[splits.Length - 1];
@@ -92,9 +100,12 @@ namespace DummyDB_5.ViewModel
                     {
                         string[] line = file.Split("\\");
                         Message = $"Не найдена схема для таблицы {line[line.Length - 1].Replace(".csv", "")} или в таблице некорректные данные";
-                    }    
+                       
+                    }  
+                    
                 }
             }
+           
         });
 
 

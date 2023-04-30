@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:DummyDB_5"
         xmlns:vm="clr-namespace:DummyDB_5.ViewModel"
         mc:Ignorable="d"
-        Title="Database Explorer" Height="450" Width="800">
+        Title="Database Explorer" Height="450" Width="701">
     <Window.DataContext>
         <vm:MainViewModel/>
     </Window.DataContext>
@@ -16,7 +16,8 @@
             <RowDefinition Height="27*"/>
             <RowDefinition Height="24.018"/>
             <RowDefinition Height="6*"/>
-            <RowDefinition Height="358*"/>
+            <RowDefinition Height="87*"/>
+            <RowDefinition Height="271*"/>
             <RowDefinition Height="18.723"/>
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
@@ -40,10 +41,10 @@
                 <SolidColorBrush Color="Lavender"/>
             </TextBlock.Background>
         </TextBlock>
-        <TreeView Grid.Column="1" Grid.Row="3">
+        <TreeView Grid.Column="1" Grid.Row="3" Grid.RowSpan="2">
             <TreeViewItem x:Name="dataTree" IsExpanded="True" x:FieldModifier="public"/>
         </TreeView>
-        <TextBlock Text="{Binding Message}" Foreground="Red"  x:Name="TextShow" Grid.Column="1" Grid.Row="4" d:LayoutOverrides="HorizontalAlignment" Grid.ColumnSpan="3"/>
-        <DataGrid Name="dataGrid" ItemsSource="{Binding DataTable}" Grid.Column="3" Grid.Row="3"  AutoGenerateColumns="True"/>
+        <TextBlock Text="{Binding Message}" Foreground="Red"  x:Name="TextShow" Grid.Column="1" Grid.Row="5" d:LayoutOverrides="HorizontalAlignment" Grid.ColumnSpan="3"/>
+        <DataGrid Name="dataGrid" ItemsSource="{Binding DataTable}" Grid.Column="3" Grid.Row="3"  AutoGenerateColumns="True" Grid.RowSpan="2"/>
     </Grid>
 </Window>
