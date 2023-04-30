@@ -14,6 +14,7 @@ using System.Runtime.CompilerServices;
 using System.Windows.Controls;
 using System.Data;
 using System.Drawing.Drawing2D;
+using System.Collections;
 
 namespace DummyDB_5.ViewModel
 {
@@ -59,24 +60,41 @@ namespace DummyDB_5.ViewModel
                     string pathTable = file.Replace("json", "csv");
                     TableScheme scheme = TableScheme.ReadFile(file);
                     schemes.Add(scheme);
-                    Table table = ReadTable.Read(scheme, pathTable);
-                    schemeTablePairs.Add(scheme, table);
-                    TreeViewItem treeItem = new TreeViewItem();
-                    string[] line = file.Split("\\");
-                    treeItem.Header = (line[line.Length - 1]).Substring(0, line[line.Length - 1].Length-5);
-                    treeItem.Selected += TableTreeSelected;
-                    //treeItem.Unselected += TableTreeUnselected;
-
-                    foreach (Column key in scheme.Columns)
-                    {
-                        treeItem.Items.Add(key.Name + " | " + key.Type);
-                    }
-                    ((MainWindow)System.Windows.Application.Current.MainWindow).dataTree.Items.Add(treeItem);
-                    
                 }
-                
             }
-            Message = "Все таблицы успешно загружены";
+            foreach(string file in Directory.EnumerateFiles(folderPath))
+            {
+                if (file.Contains(".csv"))
+                {
+                    Table table = new Table();
+                    foreach (TableScheme scheme in schemes) 
+                    {
+                        try 
+                        {
+                            table = ReadTable.Read(scheme, file);
+                            schemeTablePairs.Add(scheme, table);
+                            TreeViewItem treeItem = new TreeViewItem();
+                            string[] line = file.Split("\\");
+                            treeItem.Header = (line[line.Length - 1]).Substring(0, line[line.Length - 1].Length - 4);
+                            treeItem.Selected += TableTreeSelected;
+                            //treeItem.Unselected += TableTreeUnselected;
+
+                            foreach (Column key in scheme.Columns)
+                            {
+                                treeItem.Items.Add(key.Name + " - " + key.Type);
+                            }
+                            ((MainWindow)System.Windows.Application.Current.MainWindow).dataTree.Items.Add(treeItem);
+                        }
+                        catch (Exception ex) { continue; }
+                        
+                    }
+                    if (table.Rows == null)
+                    {
+                        string[] line = file.Split("\\");
+                        Message = $"Не найдена схема для таблицы {line[line.Length - 1].Replace(".csv", "")} или в таблице некорректные данные";
+                    }    
+                }
+            }
         });
 
 

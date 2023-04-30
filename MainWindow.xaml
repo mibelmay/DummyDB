@@ -43,7 +43,7 @@
         <TreeView Grid.Column="1" Grid.Row="3">
             <TreeViewItem x:Name="dataTree" IsExpanded="True" x:FieldModifier="public"/>
         </TreeView>
-        <TextBlock Text="{Binding Message}" x:Name="TextShow" Grid.Column="1" Margin="0,0,10,0" Grid.Row="4" d:LayoutOverrides="HorizontalAlignment"/>
+        <TextBlock Text="{Binding Message}" Foreground="Red"  x:Name="TextShow" Grid.Column="1" Grid.Row="4" d:LayoutOverrides="HorizontalAlignment" Grid.ColumnSpan="3"/>
         <DataGrid Name="dataGrid" ItemsSource="{Binding DataTable}" Grid.Column="3" Grid.Row="3"  AutoGenerateColumns="True"/>
     </Grid>
 </Window>
