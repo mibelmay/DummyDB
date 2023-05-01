@@ -43,6 +43,13 @@ namespace DummyDB_5.ViewModel
                 OnPropertyChanged();    
             }
         }
+
+        public ICommand CreateDB_Click => new CommandDelegate(parameter =>
+        {
+            CreateDBWindow CreateDB = new CreateDBWindow();
+            CreateDB.Owner = ((MainWindow)System.Windows.Application.Current.MainWindow);
+            CreateDB.Show();
+        });
         public ICommand OpenSourceClick => new CommandDelegate(parameter =>
         {
             ((MainWindow)System.Windows.Application.Current.MainWindow).dataTree.Items.Clear();

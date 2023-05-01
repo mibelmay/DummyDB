@@ -6,7 +6,9 @@
         xmlns:local="clr-namespace:DummyDB_5"
         xmlns:vm="clr-namespace:DummyDB_5.ViewModel"
         mc:Ignorable="d"
+        ResizeMode="NoResize"
         Title="Database Explorer" Height="450" Width="701">
+
     <Window.DataContext>
         <vm:MainViewModel/>
     </Window.DataContext>
@@ -14,11 +16,11 @@
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="27*"/>
-            <RowDefinition Height="24.018"/>
+            <RowDefinition Height="24*"/>
             <RowDefinition Height="6*"/>
             <RowDefinition Height="87*"/>
-            <RowDefinition Height="271*"/>
-            <RowDefinition Height="18.723"/>
+            <RowDefinition Height="271"/>
+            <RowDefinition Height="10"/>
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="9*" />
@@ -27,24 +29,26 @@
             <ColumnDefinition Width="190*" />
             <ColumnDefinition Width="9*" />
         </Grid.ColumnDefinitions>
-        <Menu Grid.ColumnSpan="5" Margin="0,3,0,2">
+        <Menu Grid.ColumnSpan="5" Grid.Row="0" Margin="0,3,0,2">
             <MenuItem Command="{Binding OpenSourceClick}" Header="Open Source" FontSize="15" Width="98">
             </MenuItem>
         </Menu>
-        <TextBox  Grid.Column="1" Grid.Row ="1" Text="Source" Margin="0,10,0,0" Grid.RowSpan="2">
+        <TextBox  Grid.Column="1" Grid.Row ="1" Text="Source" Margin="0,3,0,0">
             <TextBox.Background>
                 <SolidColorBrush Color="Lavender"/>
             </TextBox.Background>
         </TextBox>
-        <TextBlock Grid.Column="3" Grid.Row ="1" Text="Table" Margin="0,10,0,0" Grid.RowSpan="2">
-            <TextBlock.Background>
+        <TextBox  Grid.Column="3" Grid.Row ="1" Text="Table" Margin="0,3,0,0">
+            <TextBox.Background>
                 <SolidColorBrush Color="Lavender"/>
-            </TextBlock.Background>
-        </TextBlock>
+            </TextBox.Background>
+        </TextBox>
         <TreeView Grid.Column="1" Grid.Row="3" Grid.RowSpan="2">
             <TreeViewItem x:Name="dataTree" IsExpanded="True" x:FieldModifier="public"/>
         </TreeView>
-        <TextBlock Text="{Binding Message}" Foreground="Red"  x:Name="TextShow" Grid.Column="1" Grid.Row="5" d:LayoutOverrides="HorizontalAlignment" Grid.ColumnSpan="3"/>
-        <DataGrid Name="dataGrid" ItemsSource="{Binding DataTable}" Grid.Column="3" Grid.Row="3"  AutoGenerateColumns="True" Grid.RowSpan="2"/>
+        <TextBlock Text="{Binding Message}" Foreground="Red"  x:Name="TextShow" Grid.Column="1" Grid.Row="5" Grid.ColumnSpan="3" TextAlignment="Center"/>
+        <DataGrid Name="dataGrid" ItemsSource="{Binding DataTable}" Grid.Column="3" Grid.Row="3"  AutoGenerateColumns="True" Margin="0,0,0,73" Grid.RowSpan="2"/>
+        <Button Command="{Binding CreateDB_Click}" Content="Создать БД" Grid.Column="3" Grid.Row="4" Margin="1,216,217,34" Width="112"/>
+
     </Grid>
 </Window>
