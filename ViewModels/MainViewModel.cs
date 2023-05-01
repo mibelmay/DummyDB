@@ -92,7 +92,7 @@ namespace DummyDB_5.ViewModel
                             string[] line = file.Split("\\");
                             treeItem.Header = (line[line.Length - 1]).Substring(0, line[line.Length - 1].Length - 4);
                             treeItem.Selected += TableTreeSelected;
-                            //treeItem.Unselected += TableTreeUnselected;
+                          
 
                             foreach (Column key in scheme.Columns)
                             {
@@ -144,10 +144,7 @@ namespace DummyDB_5.ViewModel
             DataTable = dataTable;
         }
 
-        //private void TableTreeUnselected(object sender, RoutedEventArgs e)
-        //{
-        //    ((MainWindow)System.Windows.Application.Current.MainWindow).dataGrid.Columns.Clear();
-        //}
+  
     }
 
 }

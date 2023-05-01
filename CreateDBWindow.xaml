@@ -13,16 +13,17 @@
             <RowDefinition Height="20" />
             <RowDefinition Height="20" />
             <RowDefinition Height="20" />
+            <RowDefinition Height="20" />
             <RowDefinition Height="50"/>
         </Grid.RowDefinitions>
 
         <TextBlock Grid.Row="0" HorizontalAlignment="Center">Ваше название</TextBlock>
         <TextBox x:Name="DB_name" Grid.Row="1" Margin="100,0,100,0"/>
         <TextBlock Text="Выберите место хранения БД" Grid.Row="2" HorizontalAlignment="Center"/>
-        <Button Command="{Binding Choose_Place}" Grid.Row="3" Content="Выбрать место" Margin="100,0,100,0"/>
-
-        <WrapPanel Grid.Row="4" HorizontalAlignment="Right" Margin="0,15,10,0">
-            <Button IsDefault="True" Command="{Binding Create_Click}" MinWidth="60" Content="OK"/>
+        <Button Click="Choose_Place" Grid.Row="3" Content="Выбрать место" Margin="100,0,100,0"/>
+        <TextBlock Text="{Binding Place}" x:Name="DB_path" Grid.Row="4" Margin="100,0,100,0"/>
+        <WrapPanel Grid.Row="5" HorizontalAlignment="Right" Margin="0,15,10,0">
+            <Button IsDefault="True" Click="CreateDB_Click" MinWidth="60" Content="OK"/>
             <Button IsCancel="True" MinWidth="60" Content="Отмена"/>
         </WrapPanel>
     </Grid>
