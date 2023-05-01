@@ -4,9 +4,12 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:DummyDB_5"
+        xmlns:nm="clr-namespace:DummyDB_5.ViewModel"
         mc:Ignorable="d"
         ResizeMode="NoResize"
         Title="Create DataBase" Height="200" Width="450">
+
+
     <Grid VerticalAlignment="Top">
         <Grid.RowDefinitions>
             <RowDefinition Height="20" />
@@ -20,10 +23,10 @@
         <TextBlock Grid.Row="0" HorizontalAlignment="Center">Ваше название</TextBlock>
         <TextBox x:Name="DB_name" Grid.Row="1" Margin="100,0,100,0"/>
         <TextBlock Text="Выберите место хранения БД" Grid.Row="2" HorizontalAlignment="Center"/>
-        <Button Click="Choose_Place" Grid.Row="3" Content="Выбрать место" Margin="100,0,100,0"/>
-        <TextBlock Text="{Binding Place}" x:Name="DB_path" Grid.Row="4" Margin="100,0,100,0"/>
+        <Button Command="{Binding Choose_Place}" Grid.Row="3" Content="Выбрать место" Margin="100,0,100,0"/>
+        <TextBlock Text="{Binding Path}" HorizontalAlignment="Center"  Grid.Row="4" Margin="0,0,10,0"/>
         <WrapPanel Grid.Row="5" HorizontalAlignment="Right" Margin="0,15,10,0">
-            <Button IsDefault="True" Click="CreateDB_Click" MinWidth="60" Content="OK"/>
+            <Button IsDefault="True" Command="{Binding CreateDB_Click}" MinWidth="60" Content="OK"/>
             <Button IsCancel="True" MinWidth="60" Content="Отмена"/>
         </WrapPanel>
     </Grid>

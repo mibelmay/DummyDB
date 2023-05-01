@@ -1,4 +1,5 @@
-﻿using System;
+﻿using DummyDB_5.ViewModel;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -24,30 +25,30 @@ namespace DummyDB_5
         public CreateDBWindow()
         {
             InitializeComponent();
+            DataContext = new CreateDBViewModel();
         }
 
-        private void Choose_Place(object sender, RoutedEventArgs e)
-        {
-            FolderBrowserDialog openFolderDialog = new FolderBrowserDialog();
-            string? folderPath = "";
+        //    private void Choose_Place(object sender, RoutedEventArgs e)
+        //    {
+        //        FolderBrowserDialog openFolderDialog = new FolderBrowserDialog();
+        //        string? folderPath = "";
 
-            if (openFolderDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
-            {
-                folderPath = openFolderDialog.SelectedPath;
-            }
-            if (folderPath == "")
-            {
-                return;
-            }
-            DB_path.Text = $"{folderPath}";
+        //        if (openFolderDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+        //        {
+        //            folderPath = openFolderDialog.SelectedPath;
+        //        }
+        //        if (folderPath == "")
+        //        {
+        //            return;
+        //        }
+        //        DB_path.Text = $"{folderPath}";
 
-        }
-        private void CreateDB_Click(object sender, RoutedEventArgs e)
-        {
-            string name = DB_name.Text;
-            string path = DB_path.Text + "\\" + name;
-            Directory.CreateDirectory(path);
-            ((CreateDBWindow)System.Windows.Application.Current.MainWindow).Close();
-        }
+        //    }
+        //    private void CreateDB_Click(object sender, RoutedEventArgs e)
+        //    {
+        //        string name = DB_name.Text;
+        //        string path = DB_path.Text + "\\" + name;
+        //        Directory.CreateDirectory(path);
+        //    }
     }
 }
