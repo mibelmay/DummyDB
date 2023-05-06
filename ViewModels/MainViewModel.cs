@@ -1,26 +1,18 @@
 ﻿using DummyDB_5.Model;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Windows;
 using System.Windows.Input;
-using System.ComponentModel;
-using System.Runtime.CompilerServices;
 using System.Windows.Controls;
 using System.Data;
-using System.Drawing.Drawing2D;
-using System.Collections;
-using System.Drawing;
 
 namespace DummyDB_5.ViewModel
 {
     public class MainViewModel : ViewModel
     {
+        
         private Dictionary<TableScheme, Table> schemeTablePairs = new Dictionary<TableScheme, Table>();
         private List<TableScheme> schemes = new List<TableScheme>();
         private DataTable _dataTable;
@@ -48,8 +40,9 @@ namespace DummyDB_5.ViewModel
         {
             CreateDBWindow CreateDB = new CreateDBWindow();
             CreateDB.Owner = ((MainWindow)System.Windows.Application.Current.MainWindow);
-            CreateDB.Show();
+            CreateDB.ShowDialog();
         });
+
         public ICommand OpenSourceClick => new CommandDelegate(parameter =>
         {
             ((MainWindow)System.Windows.Application.Current.MainWindow).dataTree.Items.Clear();
@@ -107,14 +100,12 @@ namespace DummyDB_5.ViewModel
                     {
                         string[] line = file.Split("\\");
                         Message = $"Не найдена схема для таблицы {line[line.Length - 1].Replace(".csv", "")} или в таблице некорректные данные";
-                       
-                    }  
+                    }
                     
                 }
             }
            
         });
-
 
         private void TableTreeSelected(object sender, RoutedEventArgs e)
         {
@@ -144,7 +135,15 @@ namespace DummyDB_5.ViewModel
             DataTable = dataTable;
         }
 
-  
+        public ICommand CreateTable_Click => new CommandDelegate(parameter =>
+        {
+            CreateTableWindow CreateTable = new CreateTableWindow();
+            CreateTable.Owner = ((MainWindow)System.Windows.Application.Current.MainWindow);
+            CreateTable.ShowDialog();
+        });
+
+
+
     }
 
 }

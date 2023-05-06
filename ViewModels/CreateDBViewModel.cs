@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Windows.Input;
 using System.IO;
+using System.Windows;
 
 namespace DummyDB_5.ViewModel
 {
@@ -17,29 +18,41 @@ namespace DummyDB_5.ViewModel
             get { return _path; }
             set { _path = value; OnPropertyChanged(); }
         }
-
+        private string _name;
+        public string Name
+        {
+            get { return _name; }
+            set { _name = value; OnPropertyChanged(); }
+        }
         public ICommand Choose_Place => new CommandDelegate(parameter =>
         {
+            Path = "";
             FolderBrowserDialog openFolderDialog = new FolderBrowserDialog();
-            string? folderPath = "";
+            string? path = "";
 
             if (openFolderDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
             {
-                folderPath = openFolderDialog.SelectedPath;
+                path = openFolderDialog.SelectedPath;
             }
-            if (folderPath == "")
+            if (path == "")
             {
                 return;
             }
-            Path = $"{folderPath}";
+            Path = path;
 
         });
 
         public ICommand CreateDB_Click => new CommandDelegate(parameter =>
         {
-            //string name = DB_name.Text;
-            //string path = DB_path.Text + "\\" + name;
-            //Directory.CreateDirectory(path);
+            string name = Name;
+            string path = Path + "\\" + Name;
+            Path = path;
+            if (Directory.Exists(path))
+            {
+                Path = "Такая папка уже существует";
+                return;
+            }
+            Directory.CreateDirectory(path);
         });
     }
 }
