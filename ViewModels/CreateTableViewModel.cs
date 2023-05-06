@@ -12,6 +12,16 @@ namespace DummyDB_5.ViewModel
 {
     public class CreateTableViewModel : ViewModel
     {
+        private string _tableName;
+        public string TableName
+        {
+            get { return _tableName; }
+            set 
+            { 
+                _tableName = value; 
+                OnPropertyChanged();
+            }
+        }
         private string _columnName;
         public string ColumnName
         {
@@ -38,18 +48,16 @@ namespace DummyDB_5.ViewModel
         public ObservableCollection<Column> _columns = new ObservableCollection<Column>();
         public IEnumerable<Column> Columns => _columns;
 
-        //public CreateTableViewModel()
-        //{
-        //    _columns = new ObservableCollection<Column>()
-        //    {
-        //        new Column{Name = "ID", Type = "string"},
-        //    };
-        //}
-
 
         public ICommand AddColumn => new CommandDelegate(patameter =>
         {
+            if (ColumnName == "" || Type == null) return;
             _columns.Add(new Column { Name = $"{ColumnName}", Type = $"{Type}"});
+        });
+
+        public ICommand CreateTable => new CommandDelegate(patameter =>
+        {
+
         });
     }
 }

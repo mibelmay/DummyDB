@@ -7,7 +7,7 @@
         xmlns:vm="clr-namespace:DummyDB_5.ViewModel"
         xmlns:sys="clr-namespace:System;assembly=mscorlib"
         mc:Ignorable="d"
-        Title="CreateTableWindow" Height="450" Width="400">
+        Title="CreateTableWindow" Height="500" Width="400">
     <Window.DataContext>
         <vm:CreateTableViewModel/>
     </Window.DataContext>
@@ -16,14 +16,19 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="auto" />
             <RowDefinition Height="auto"/>
+            <RowDefinition Height="auto"/>
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
-        <TextBlock
-            Grid.Row="0"
+        <StackPanel Grid.Row="0">
+            <TextBlock Text="Введите имя таблицы" FontSize="18" HorizontalAlignment="Center"/>
+            <TextBox Text="{Binding TableName}" Width="269"/>
+        </StackPanel>
+            <TextBlock
+            Grid.Row="1"
             FontSize="18"
             Text="Введите имя и тип столбца"
             HorizontalAlignment="Center"/>
-        <StackPanel Grid.Row="1" Margin="65,0,65,0" >
+        <StackPanel Grid.Row="2" Margin="65,0,65,0" >
             <TextBox Text="{Binding ColumnName}"/>
             <ComboBox SelectedItem="{Binding Type}">
                 <sys:String>string</sys:String>
@@ -34,14 +39,14 @@
             <Button Content="Добавить столбец" Command="{Binding AddColumn}" Margin="0,5,0,5"/>
         </StackPanel>
         <ScrollViewer
-             Grid.Row="2"
+             Grid.Row="3"
             Margin="0 20 0 0"
             VerticalScrollBarVisibility="Auto">
 
-                <ItemsControl ItemsSource="{Binding Columns}">
+            <ItemsControl ItemsSource="{Binding Columns}">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
-                        <Border Padding="10" BorderBrush="LightGray" BorderThickness="1" Margin="0 0 10 10">
+                        <Border Padding="10" BorderBrush="LightGray" BorderThickness="1" Margin="10 10 10 10">
                             <Grid>
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="auto"/>
@@ -55,5 +60,7 @@
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
         </ScrollViewer>
+        
+        
     </Grid>
 </Window>
