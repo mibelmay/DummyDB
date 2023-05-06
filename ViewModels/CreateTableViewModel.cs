@@ -2,11 +2,13 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Text.Json;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using System.Xml.Linq;
+using System.Windows;
 
 namespace DummyDB_5.ViewModel
 {
@@ -47,6 +49,7 @@ namespace DummyDB_5.ViewModel
 
         public ObservableCollection<Column> _columns = new ObservableCollection<Column>();
         public IEnumerable<Column> Columns => _columns;
+        public List<Column> columnsOfNewTable = new List<Column>();
 
 
         public ICommand AddColumn => new CommandDelegate(patameter =>
@@ -57,7 +60,17 @@ namespace DummyDB_5.ViewModel
 
         public ICommand CreateTable => new CommandDelegate(patameter =>
         {
-
+            foreach (Column column in _columns)
+            {
+                columnsOfNewTable.Add(column);
+            }
+            TableScheme scheme = new TableScheme()
+            {
+                Name = TableName,
+                Columns = columnsOfNewTable
+            };
+            string json = JsonSerializer.Serialize(scheme);
+            MessageBox.Show(json);
         });
     }
 }
