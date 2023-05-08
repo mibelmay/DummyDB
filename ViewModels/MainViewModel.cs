@@ -152,6 +152,7 @@ namespace DummyDB_5.ViewModel
 
         public ICommand Edit_Click => new CommandDelegate(parameter =>
         {
+            if (selectedTable == null) return;
             EditWindow EditWindow = new EditWindow();
             EditWindow.Owner = ((MainWindow)System.Windows.Application.Current.MainWindow);
             EditWindow.ShowDialog();
