@@ -13,7 +13,7 @@ namespace DummyDB_5.ViewModel
     public class MainViewModel : ViewModel
     {
         
-        private Dictionary<TableScheme, Table> schemeTablePairs = new Dictionary<TableScheme, Table>();
+        public static Dictionary<TableScheme, Table> schemeTablePairs = new Dictionary<TableScheme, Table>();
        
         private DataTable _dataTable;
         public DataTable DataTable
@@ -37,7 +37,6 @@ namespace DummyDB_5.ViewModel
         }
 
         public static DataTable selectedTable { get; set; }
-
         public static string folderPath { get; set; }
         public ICommand CreateDB_Click => new CommandDelegate(parameter =>
         {
@@ -123,6 +122,7 @@ namespace DummyDB_5.ViewModel
             {
                 if(pair.Key.Name == tableName)
                 {
+                    dataTable.TableName = tableName;
                     foreach(Column column in pair.Key.Columns)
                     {
                         dataTable.Columns.Add(column.Name);

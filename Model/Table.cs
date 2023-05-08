@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace DummyDB_5.Model
 {
-    class Table
+    public class Table
     {
         public TableScheme Scheme { get; set; }
         public List<Row> Rows { get; set; }

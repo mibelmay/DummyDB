@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace DummyDB_5.Model
 {
-    class Row
+    public class Row
     {
         public Dictionary<Column, object> Data { get; set; }
         public Row()
