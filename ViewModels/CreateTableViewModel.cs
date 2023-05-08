@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 using System.Xml.Linq;
 using System.Windows;
+using System.IO;
 
 namespace DummyDB_5.ViewModel
 {
@@ -49,7 +50,7 @@ namespace DummyDB_5.ViewModel
 
         public ObservableCollection<Column> _columns = new ObservableCollection<Column>();
         public IEnumerable<Column> Columns => _columns;
-        public List<Column> columnsOfNewTable = new List<Column>();
+        
 
 
         public ICommand AddColumn => new CommandDelegate(patameter =>
@@ -60,6 +61,12 @@ namespace DummyDB_5.ViewModel
 
         public ICommand CreateTable => new CommandDelegate(patameter =>
         {
+            if(MainViewModel.folderPath == "")
+            {
+                MessageBox.Show("Вернитесь на главное окно и выберите папку");
+                return;
+            }
+            List<Column> columnsOfNewTable = new List<Column>();
             foreach (Column column in _columns)
             {
                 columnsOfNewTable.Add(column);
@@ -69,8 +76,10 @@ namespace DummyDB_5.ViewModel
                 Name = TableName,
                 Columns = columnsOfNewTable
             };
-            string json = JsonSerializer.Serialize(scheme);
-            MessageBox.Show(json);
+            string json = JsonSerializer.Serialize<TableScheme>(scheme);
+            File.WriteAllText($"{MainViewModel.folderPath}\\{TableName}.json", json);
+            File.Create($"{MainViewModel.folderPath}\\{TableName}.csv");
+            MessageBox.Show($"Таблица создана по пути {MainViewModel.folderPath}");
         });
     }
 }

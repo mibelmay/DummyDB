@@ -14,7 +14,7 @@ namespace DummyDB_5.ViewModel
     {
         
         private Dictionary<TableScheme, Table> schemeTablePairs = new Dictionary<TableScheme, Table>();
-        private List<TableScheme> schemes = new List<TableScheme>();
+       
         private DataTable _dataTable;
         public DataTable DataTable
         {
@@ -36,6 +36,9 @@ namespace DummyDB_5.ViewModel
             }
         }
 
+        public static DataTable selectedTable { get; set; }
+
+        public static string folderPath { get; set; }
         public ICommand CreateDB_Click => new CommandDelegate(parameter =>
         {
             CreateDBWindow CreateDB = new CreateDBWindow();
@@ -46,9 +49,12 @@ namespace DummyDB_5.ViewModel
         public ICommand OpenSourceClick => new CommandDelegate(parameter =>
         {
             ((MainWindow)System.Windows.Application.Current.MainWindow).dataTree.Items.Clear();
+            schemeTablePairs.Clear();
+            List<TableScheme> schemes = new List<TableScheme>();
             FolderBrowserDialog openFolderDialog = new FolderBrowserDialog();
-            string? folderPath = "";
-        
+            folderPath = "";
+            Message = "";
+
             if ( openFolderDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
             {
                 folderPath = openFolderDialog.SelectedPath;
@@ -92,6 +98,7 @@ namespace DummyDB_5.ViewModel
                                 treeItem.Items.Add(key.Name + " - " + key.Type);
                             }
                             ((MainWindow)System.Windows.Application.Current.MainWindow).dataTree.Items.Add(treeItem);
+                            break;
                         }
                         catch (Exception ex) { continue; }
                         
@@ -133,6 +140,7 @@ namespace DummyDB_5.ViewModel
                 }
             }
             DataTable = dataTable;
+            selectedTable = dataTable;
         }
 
         public ICommand CreateTable_Click => new CommandDelegate(parameter =>
@@ -142,7 +150,12 @@ namespace DummyDB_5.ViewModel
             CreateTable.ShowDialog();
         });
 
-
+        public ICommand Edit_Click => new CommandDelegate(parameter =>
+        {
+            EditWindow EditWindow = new EditWindow();
+            EditWindow.Owner = ((MainWindow)System.Windows.Application.Current.MainWindow);
+            EditWindow.ShowDialog();
+        });
 
     }
 

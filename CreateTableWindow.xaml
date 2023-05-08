@@ -34,7 +34,7 @@
             <ComboBox SelectedItem="{Binding Type}">
                 <sys:String>string</sys:String>
                 <sys:String>uint</sys:String>
-                <sys:String>DateTime</sys:String>
+                <sys:String>datetime</sys:String>
                 <sys:String>int</sys:String>
             </ComboBox>
             <Button Content="Добавить столбец" Command="{Binding AddColumn}" Margin="0,5,0,5"/>
