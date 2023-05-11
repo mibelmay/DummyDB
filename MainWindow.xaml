@@ -43,7 +43,7 @@
                 <SolidColorBrush Color="Lavender"/>
             </TextBox.Background>
         </TextBox>
-        <TreeView Grid.Column="1" Grid.Row="3" Grid.RowSpan="2">
+        <TreeView Grid.Column="1" Grid.Row="3" Grid.RowSpan="2" Margin="0,0,0,73">
             <TreeViewItem x:Name="dataTree" IsExpanded="True" x:FieldModifier="public"/>
         </TreeView>
         <TextBlock Text="{Binding Message}" Foreground="Red"  x:Name="TextShow" Grid.Column="1" Grid.Row="5" Grid.ColumnSpan="3"/>
@@ -51,5 +51,6 @@
         <Button Command="{Binding CreateDB_Click}" Content="Создать БД" Grid.Column="3" Grid.Row="4" HorizontalAlignment="Left" Width="150" Height="40" VerticalAlignment="Bottom"/>
         <Button Command="{Binding CreateTable_Click}" Content="Создать таблицу" Grid.Column="3" Grid.Row="4" Width="150" Height="40" HorizontalAlignment="Center" VerticalAlignment="Bottom"/>
         <Button Command="{Binding Edit_Click}" Content="Редактировать таблицу" Grid.Column="3" Grid.Row="4" Width="150" Height="40" VerticalAlignment="Bottom" HorizontalAlignment="Right"/>
+        <Button Command="{Binding Update_Click}" Content="Обновить" Grid.Column="1" Grid.Row="4" Height="40" VerticalAlignment="Top" Margin="0,231,0,0"/>
     </Grid>
 </Window>

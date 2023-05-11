@@ -2,10 +2,14 @@
 using System.Text.Json;
 using System.Data;
 using System.Windows.Input;
-using System.Windows;
 using System.Collections.Generic;
-using System.Windows.Documents;
 using System.IO;
+using System.Linq;
+using System.Text;
+using System;
+using System.Windows;
+using System.Xml.Linq;
+using System.Windows.Forms;
 
 namespace DummyDB_5.ViewModel
 {
@@ -28,7 +32,9 @@ namespace DummyDB_5.ViewModel
                 OnPropertyChanged();
             }
         }
+        private string oldFileName;
         private TableScheme scheme;
+        private Table table;
         private List<string> _columnNames;
         public List<string> ColumnNames
         {
@@ -36,6 +42,7 @@ namespace DummyDB_5.ViewModel
             set
             { _columnNames = value; OnPropertyChanged(); }
         }
+
         private string _columnName;
         public string ColumnName
         {
@@ -60,6 +67,16 @@ namespace DummyDB_5.ViewModel
             get { return _newColumnType; }
             set { _newColumnType = value; OnPropertyChanged(); }
         }
+        private string _deleteColumn;
+        public string DeleteColumn
+        {
+            get { return _deleteColumn; }
+            set
+            {
+                _deleteColumn = value; OnPropertyChanged();
+            }
+        }
+        private string folderPath;
 
         public EditViewModel() 
         {
@@ -67,41 +84,149 @@ namespace DummyDB_5.ViewModel
             TableName = MainViewModel.selectedTable.TableName;
             foreach (var pair in MainViewModel.schemeTablePairs)
             {
-                if (pair.Key.Name == TableName) { scheme = pair.Key; break; }
+                if (pair.Key.Name == TableName) { scheme = pair.Key; table = pair.Value; break; }
             }
             ColumnNames = new List<string>();
-            foreach(Column column in scheme.Columns)
+
+            foreach (Column column in scheme.Columns)
             {
                 ColumnNames.Add(column.Name);
             }
+            oldFileName = TableName;
+            folderPath = MainViewModel.folderPath;
         }
 
         public ICommand Save => new CommandDelegate(parameter =>
         {
-            if (_tableName != scheme.Name)
+            string[] csv = File.ReadAllLines($"{folderPath}\\{oldFileName}.csv");
+            File.Delete($"{folderPath}\\{oldFileName}.csv");
+            if (TableName != scheme.Name)
             {
-                scheme.Name = _tableName;
+                scheme.Name = TableName;
+                File.Delete(folderPath + $"\\{oldFileName}.json");
             }
-            if(SelectedColumn != null && ColumnName != "" && ColumnName != null)
+            if (SelectedColumn != null && ColumnName != "" && ColumnName != null)
             {
-                foreach(Column column in scheme.Columns)
+                RenameColumn();
+            }
+            if (NewColumnType != null && NewColumnName != "" && NewColumnName != null)
+            {
+                csv = AddNewColumnToTable(csv, NewColumnType);
+            }
+            if (DeleteColumn != null && DeleteColumn != "")
+            {
+                DialogResult dialogResult = System.Windows.Forms.MessageBox.Show("Вы уверены что хотите удалить столбец?", "Some Title", MessageBoxButtons.YesNo);
+                if (dialogResult == DialogResult.Yes)
                 {
-                    if(column.Name == _selectedColumn) 
-                    {
-                        column.Name = _columnName;
-                    }
+                    csv = DeleteColumnFromTable(csv);
                 }
             }
-            if(NewColumnType != null && NewColumnName != "" && NewColumnName != null) 
-            {
-                scheme.Columns.Add(new Column { Name = _newColumnName, Type = _newColumnType });
-            }
             string json = JsonSerializer.Serialize(scheme);
-            //File.WriteAllText($"{MainViewModel.folderPath}\\{scheme.Name}.json", json);
+            File.WriteAllText($"{folderPath}\\{scheme.Name}.json", json);
+            File.WriteAllText($"{folderPath}\\{scheme.Name}.csv", String.Join("\n", csv));
+            ColumnName = DeleteColumn = NewColumnName = "";
+            SelectedColumn = NewColumnType = null;
             DisplayTable();
-            //MessageBox.Show(json);
         });
 
+        public bool IfColumnExist(string columnName)
+        {
+            foreach(Column column in scheme.Columns)
+            {
+                if (column.Name == columnName)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        public void RenameColumn()
+        {
+            if (IfColumnExist(ColumnName))
+            {
+                System.Windows.MessageBox.Show($"Колонка с названием {ColumnName} уже существует");
+                return;
+            }
+            foreach (Column column in scheme.Columns)
+            {
+                if (column.Name == SelectedColumn)
+                {
+                    column.Name = ColumnName;
+                }
+            }
+            ColumnNames.Remove(SelectedColumn);
+            ColumnNames.Add(ColumnName);
+        }
+
+        public string[] DeleteColumnFromTable(string[] csv)
+        {
+            if (!IfColumnExist(DeleteColumn))
+            {
+                System.Windows.MessageBox.Show($"Колонки с названием {DeleteColumn} нет в таблице");
+                return csv;
+            }
+            int count = 0;
+            foreach (Column column in scheme.Columns)
+            {
+                if (DeleteColumn == column.Name)
+                {
+                    ColumnNames.Remove(column.Name);
+                    scheme.Columns.Remove(column);
+                    foreach (var row in table.Rows)
+                    {
+                        row.Data.Remove(column);
+                    }
+                    break;
+                }
+                count += 1;
+            }
+            string[] newFile = new string[csv.Length];
+            for (int i = 0; i < csv.Length; i++)
+            {
+                List<string> columns = (csv[i].Split(";")).ToList();
+                columns.RemoveAt(count);
+                string newLine = String.Join(";", columns);
+                if (newLine[newLine.Length - 1] == ';')
+                {
+                    newLine.Remove(newLine.Length - 1);
+                }
+                newFile[i] = String.Join(";", columns);
+            }
+            return newFile;
+        }
+
+        public string[] AddNewColumnToTable(string[] csv, string type)
+        {
+            if (IfColumnExist(NewColumnName))
+            {
+                System.Windows.MessageBox.Show($"Колонка с названием {NewColumnName} уже существует");
+                return csv;
+            }
+            Column newColumn = new Column { Name = NewColumnName, Type = NewColumnType };
+            scheme.Columns.Add(newColumn);
+            ColumnNames.Add(NewColumnName);
+            string[] newFile = new string[csv.Length];
+            string addValue = "";
+            if (type == "string") 
+            { 
+                addValue = null; 
+            }
+            else if (type == "datetime") 
+            { 
+                addValue = $"{DateTime.MinValue}"; 
+            }
+            else 
+            { 
+                addValue = "0";
+            }
+            for (int i = 0; i < csv.Length; i++)
+            {
+                newFile[i] = csv[i] += $";{addValue}";
+                table.Rows[i].Data[newColumn] = addValue;
+            }
+            return newFile;
+        }
         public void DisplayTable()
         {
             DataTable.Clear();

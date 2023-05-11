@@ -35,21 +35,15 @@ namespace DummyDB_5.ViewModel
                 OnPropertyChanged();    
             }
         }
-
         public static DataTable selectedTable { get; set; }
         public static string folderPath { get; set; }
-        public ICommand CreateDB_Click => new CommandDelegate(parameter =>
-        {
-            CreateDBWindow CreateDB = new CreateDBWindow();
-            CreateDB.Owner = ((MainWindow)System.Windows.Application.Current.MainWindow);
-            CreateDB.ShowDialog();
-        });
+
+
 
         public ICommand OpenSourceClick => new CommandDelegate(parameter =>
         {
             ((MainWindow)System.Windows.Application.Current.MainWindow).dataTree.Items.Clear();
             schemeTablePairs.Clear();
-            List<TableScheme> schemes = new List<TableScheme>();
             FolderBrowserDialog openFolderDialog = new FolderBrowserDialog();
             folderPath = "";
             Message = "";
@@ -66,6 +60,13 @@ namespace DummyDB_5.ViewModel
             string[] splits = folderPath.Split('\\');
             string folderName = splits[splits.Length - 1];
             ((MainWindow)System.Windows.Application.Current.MainWindow).dataTree.Header = folderName;
+            LoadTreeView();
+        });
+
+        public void LoadTreeView()
+        {
+            List<TableScheme> schemes = new List<TableScheme>();
+            ((MainWindow)System.Windows.Application.Current.MainWindow).dataTree.Items.Clear();
             foreach (string file in Directory.EnumerateFiles(folderPath))
             {
                 if (file.Contains(".json"))
@@ -75,14 +76,14 @@ namespace DummyDB_5.ViewModel
                     schemes.Add(scheme);
                 }
             }
-            foreach(string file in Directory.EnumerateFiles(folderPath))
+            foreach (string file in Directory.EnumerateFiles(folderPath))
             {
                 if (file.Contains(".csv"))
                 {
                     Table table = new Table();
-                    foreach (TableScheme scheme in schemes) 
+                    foreach (TableScheme scheme in schemes)
                     {
-                        try 
+                        try
                         {
                             table = ReadTable.Read(scheme, file);
                             schemeTablePairs.Add(scheme, table);
@@ -90,7 +91,6 @@ namespace DummyDB_5.ViewModel
                             string[] line = file.Split("\\");
                             treeItem.Header = (line[line.Length - 1]).Substring(0, line[line.Length - 1].Length - 4);
                             treeItem.Selected += TableTreeSelected;
-                          
 
                             foreach (Column key in scheme.Columns)
                             {
@@ -100,18 +100,15 @@ namespace DummyDB_5.ViewModel
                             break;
                         }
                         catch (Exception ex) { continue; }
-                        
                     }
                     if (table.Rows == null)
                     {
                         string[] line = file.Split("\\");
                         Message = $"Не найдена схема для таблицы {line[line.Length - 1].Replace(".csv", "")} или в таблице некорректные данные";
                     }
-                    
                 }
             }
-           
-        });
+        }
 
         private void TableTreeSelected(object sender, RoutedEventArgs e)
         {
@@ -142,6 +139,17 @@ namespace DummyDB_5.ViewModel
             DataTable = dataTable;
             selectedTable = dataTable;
         }
+
+        public ICommand Update_Click => new CommandDelegate(parameter =>
+        {
+            LoadTreeView();
+        });
+        public ICommand CreateDB_Click => new CommandDelegate(parameter =>
+        {
+            CreateDBWindow CreateDB = new CreateDBWindow();
+            CreateDB.Owner = ((MainWindow)System.Windows.Application.Current.MainWindow);
+            CreateDB.ShowDialog();
+        });
 
         public ICommand CreateTable_Click => new CommandDelegate(parameter =>
         {
