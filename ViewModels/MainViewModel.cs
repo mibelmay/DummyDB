@@ -7,6 +7,7 @@ using System.Windows;
 using System.Windows.Input;
 using System.Windows.Controls;
 using System.Data;
+//using System.Windows.Documents;
 
 namespace DummyDB_5.ViewModel
 {
@@ -35,7 +36,7 @@ namespace DummyDB_5.ViewModel
                 OnPropertyChanged();    
             }
         }
-        public static DataTable selectedTable { get; set; }
+        public DataTable selectedTable { get; set; }
         public static string folderPath { get; set; }
 
 
@@ -161,9 +162,31 @@ namespace DummyDB_5.ViewModel
         public ICommand Edit_Click => new CommandDelegate(parameter =>
         {
             if (selectedTable == null) return;
-            EditWindow EditWindow = new EditWindow();
-            EditWindow.Owner = ((MainWindow)System.Windows.Application.Current.MainWindow);
-            EditWindow.ShowDialog();
+            EditWindow NewWindow = new EditWindow();
+            EditViewModel vmEdit = new EditViewModel();
+            NewWindow.DataContext = vmEdit;
+            vmEdit.window = NewWindow;
+
+            vmEdit.DataTable = selectedTable;
+            vmEdit.TableName = selectedTable.TableName;
+            foreach (var pair in schemeTablePairs)
+            {
+                if (pair.Key.Name == selectedTable.TableName) 
+                { 
+                    vmEdit.scheme = pair.Key; 
+                    vmEdit.table = pair.Value; 
+                    break;
+                }
+            }
+            vmEdit.ColumnNames = new List<string>();
+            foreach (Column column in vmEdit.scheme.Columns)
+            {
+                vmEdit.ColumnNames.Add(column.Name);
+            }
+            vmEdit.oldFileName = selectedTable.TableName;
+            vmEdit.folderPath = folderPath;
+            NewWindow.Owner = ((MainWindow)System.Windows.Application.Current.MainWindow);
+            NewWindow.ShowDialog();
         });
 
     }

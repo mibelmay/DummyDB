@@ -5,16 +5,15 @@ using System.Windows.Input;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System;
-using System.Windows;
-using System.Xml.Linq;
 using System.Windows.Forms;
+using System.Windows.Controls;
 
 namespace DummyDB_5.ViewModel
 {
     public class EditViewModel : ViewModel
     {
+        public EditWindow window;
         private DataTable _dataTable;
         public DataTable DataTable
         {
@@ -32,9 +31,9 @@ namespace DummyDB_5.ViewModel
                 OnPropertyChanged();
             }
         }
-        private string oldFileName;
-        private TableScheme scheme;
-        private Table table;
+        public string oldFileName;
+        public TableScheme scheme;
+        public Table table;
         private List<string> _columnNames;
         public List<string> ColumnNames
         {
@@ -76,25 +75,18 @@ namespace DummyDB_5.ViewModel
                 _deleteColumn = value; OnPropertyChanged();
             }
         }
-        private string folderPath;
-
-        public EditViewModel() 
-        {
-            DataTable = MainViewModel.selectedTable;
-            TableName = MainViewModel.selectedTable.TableName;
-            foreach (var pair in MainViewModel.schemeTablePairs)
-            {
-                if (pair.Key.Name == TableName) { scheme = pair.Key; table = pair.Value; break; }
-            }
-            ColumnNames = new List<string>();
-
-            foreach (Column column in scheme.Columns)
-            {
-                ColumnNames.Add(column.Name);
-            }
-            oldFileName = TableName;
-            folderPath = MainViewModel.folderPath;
-        }
+        public string folderPath;
+        //public void AddRowToFile(Row row)
+        //{
+        //    string path = $"{folderPath}\\{TableName}.csv";
+        //    string newRow = "";
+        //    foreach(Column column in scheme.Columns)
+        //    {
+        //        newRow = newRow + $"{row.Data[column]};";
+        //    }
+        //    newRow = newRow.Substring(0, newRow.Length - 1);
+        //    File.AppendAllText(path, newRow);
+        //}
 
         public ICommand Save => new CommandDelegate(parameter =>
         {
@@ -155,8 +147,9 @@ namespace DummyDB_5.ViewModel
                     column.Name = ColumnName;
                 }
             }
-            ColumnNames.Remove(SelectedColumn);
-            ColumnNames.Add(ColumnName);
+            //ColumnNames.Remove(SelectedColumn);
+            //ColumnNames.Add(ColumnName);
+            UpdateColumnNames();
         }
 
         public string[] DeleteColumnFromTable(string[] csv)
@@ -193,6 +186,7 @@ namespace DummyDB_5.ViewModel
                 }
                 newFile[i] = String.Join(";", columns);
             }
+            UpdateColumnNames();
             return newFile;
         }
 
@@ -225,6 +219,7 @@ namespace DummyDB_5.ViewModel
                 newFile[i] = csv[i] += $";{addValue}";
                 table.Rows[i].Data[newColumn] = addValue;
             }
+            UpdateColumnNames();
             return newFile;
         }
         public void DisplayTable()
@@ -254,6 +249,14 @@ namespace DummyDB_5.ViewModel
             }
             DataTable = dataTable;
         }
-
+        public void UpdateColumnNames()
+        {
+            List<string> newColumnNames = new List<string>();
+            foreach (Column column in scheme.Columns)
+            {
+                newColumnNames.Add(column.Name);
+            }
+            ColumnNames = newColumnNames;
+        }
     }
 }

@@ -8,6 +8,7 @@
         xmlns:vm="clr-namespace:DummyDB_5.ViewModel"
         mc:Ignorable="d"
         Title="Редактирование таблицы" Height="450" Width="800">
+
     <Grid RenderTransformOrigin="0.512,0.509">
         <Grid.RowDefinitions>
             <RowDefinition Height="20"/>
@@ -27,7 +28,8 @@
             <ColumnDefinition Width="5"/>
         </Grid.ColumnDefinitions>
         <TextBlock Text="Таблица" Grid.Column="1" Grid.Row="0" FontSize="15" Background="Lavender"/>
-        <DataGrid x:Name="dataGrid" ItemsSource="{Binding DataTable}" AutoGenerateColumns="True" Grid.Row="2" Grid.Column="1" Margin="0,0,0,0"/>
+        <DataGrid x:Name="dataGrid" ItemsSource="{Binding DataTable}" AutoGenerateColumns="True" Grid.Row="2" Grid.Column="1"/>
+
         <TextBlock Text="Редактирование схемы" Grid.Row="3" Grid.Column="1" FontSize="15" Background="Lavender" Height="20" VerticalAlignment="Top" d:LayoutOverrides="Height"/>
         <TextBlock Text="Изменить имя таблицы:" Grid.Column="1" Grid.Row="3" HorizontalAlignment="Left" Height="19" VerticalAlignment="Top" Margin="23,25,0,0"/>
         <TextBox Text="{Binding TableName}" Grid.Column="1" Grid.Row="3" Margin="175,24,5,0" Height="20" VerticalAlignment="Top"/>

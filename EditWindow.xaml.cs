@@ -24,7 +24,6 @@ namespace DummyDB_5
         public EditWindow()
         {
             InitializeComponent();
-            DataContext = new EditViewModel();
         }
             
     }
