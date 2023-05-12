@@ -47,7 +47,7 @@
             <TreeViewItem x:Name="dataTree" IsExpanded="True" x:FieldModifier="public"/>
         </TreeView>
         <TextBlock Text="{Binding Message}" Foreground="Red"  x:Name="TextShow" Grid.Column="1" Grid.Row="5" Grid.ColumnSpan="3"/>
-        <DataGrid Name="dataGrid" ItemsSource="{Binding DataTable}" Grid.Column="3" Grid.Row="3"  AutoGenerateColumns="True" Margin="0,0,0,73" Grid.RowSpan="2"/>
+        <DataGrid Name="dataGrid" ItemsSource="{Binding DataTable}" Grid.Column="3" Grid.Row="3"  AutoGenerateColumns="True" Margin="0,0,0,73" Grid.RowSpan="2" CanUserAddRows="False"/>
         <Button Command="{Binding CreateDB_Click}" Content="Создать БД" Grid.Column="3" Grid.Row="4" HorizontalAlignment="Left" Width="150" Height="40" VerticalAlignment="Bottom"/>
         <Button Command="{Binding CreateTable_Click}" Content="Создать таблицу" Grid.Column="3" Grid.Row="4" Width="150" Height="40" HorizontalAlignment="Center" VerticalAlignment="Bottom"/>
         <Button Command="{Binding Edit_Click}" Content="Редактировать таблицу" Grid.Column="3" Grid.Row="4" Width="150" Height="40" VerticalAlignment="Bottom" HorizontalAlignment="Right"/>
