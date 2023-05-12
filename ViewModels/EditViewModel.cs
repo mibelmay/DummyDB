@@ -204,7 +204,7 @@ namespace DummyDB_5.ViewModel
             string addValue = "";
             if (type == "string") 
             { 
-                addValue = null; 
+                addValue = ""; 
             }
             else if (type == "datetime") 
             { 
@@ -261,80 +261,110 @@ namespace DummyDB_5.ViewModel
         public ICommand AddRow => new CommandDelegate(param =>
         {
             DataTable.Rows.Add(DataTable.NewRow());
-            table.Rows.Add(new Row());
         });
         public ICommand LoadDataTable => new CommandDelegate(param =>
         {
-            for (int i = 0; i < DataTable.Rows.Count; i++) 
+            if(!AreChangesValid())
             {
-                for (int j = 0; j < scheme.Columns.Count; j++)
-                {
-                    if (DataTable.Rows[i][scheme.Columns[j].Name] == table.Rows[i].Data[scheme.Columns[j]].ToString())
-                    {
-                        continue;
-                    }
-                    string value = DataTable.Rows[i][scheme.Columns[j].Name].ToString();
-                    switch (scheme.Columns[j].Type)
-                    {
-                        case ("int"):
-                            {
-                                if (int.TryParse(value, out int data))
-                                {
-                                    table.Rows[i].Data[scheme.Columns[j]] = data;
-                                }
-                                else
-                                {
-                                    MessageBox.Show($"В сроке {i + 1} в столбце {j + 1} указаны некорректные данные");
-                                    value = table.Rows[i].Data[scheme.Columns[j]].ToString();
-                                }
-                                break;
-                            }
-                        case ("uint"):
-                            {
-                                if (uint.TryParse(value, out uint data))
-                                {
-                                    table.Rows[i].Data[scheme.Columns[j]] = data;
-                                }
-                                else
-                                {
-                                    MessageBox.Show($"В сроке {i + 1} в столбце {scheme.Columns[j].Name} указаны некорректные данные");
-                                    value = table.Rows[i].Data[scheme.Columns[j]].ToString();
-                                }
-                                break;
-                            }
-                         case ("datetime"):
-                            {
-                                if (DateTime.TryParse(value, out DateTime data))
-                                {
-                                    table.Rows[i].Data[scheme.Columns[j]] = data;
-                                }
-                                else
-                                {
-                                    MessageBox.Show($"В сроке {i + 1} в столбце {scheme.Columns[j].Name} указаны некорректные данные");
-                                    value = table.Rows[i].Data[scheme.Columns[j]].ToString();
-                                }
-                                break;
-                            }
-                        case ("double"):
-                            {
-                                if (double.TryParse(value, out double data))
-                                {
-                                    table.Rows[i].Data[scheme.Columns[j]] = data;
-                                }
-                                else
-                                {
-                                    MessageBox.Show($"В сроке {i + 1} в столбце {scheme.Columns[j].Name} указаны некорректные данные");
-                                    value = table.Rows[i].Data[scheme.Columns[j]].ToString();
-                                }
-                                break;
-                            }
-                        default:
-                            table.Rows[i].Data[scheme.Columns[j]] = value;
-                            break;
-                    }
-                }
+                return;
             }
             DisplayTable();
         });
+
+        public bool AreChangesValid()
+        {
+            int countOfRows = DataTable.Rows.Count;
+            if (table.Rows.Count < DataTable.Rows.Count)
+            {
+                countOfRows = table.Rows.Count;
+            }
+            for (int i = 0; i < countOfRows; i++)
+            {
+                for (int j = 0; j < scheme.Columns.Count; j++)
+                {
+                    if (DataTable.Rows[i][scheme.Columns[j].Name].ToString() == table.Rows[i].Data[scheme.Columns[j]].ToString())
+                    {
+                        continue;
+                    }
+                    object data = CheckData(i, j);
+                    if (data == null) { continue; }
+                    table.Rows[i].Data[scheme.Columns[j]] = CheckData(i, j);
+                }
+            }
+            if (countOfRows < DataTable.Rows.Count)
+            {
+                for (int i = table.Rows.Count; i < DataTable.Rows.Count; i++)
+                {
+                    Row newRow = new Row();
+                    for (int j = 0; j < scheme.Columns.Count; j++)
+                    {
+                        object data = CheckData(i, j);
+                        if (data == null) { MessageBox.Show($"Невозможно добавить строку {i + 1}, т.к. в ней некорректные данные"); return false; }
+                        newRow.Data.Add(scheme.Columns[j], data);
+                    }
+                    table.Rows.Add(newRow);
+                }
+            }
+            return true;
+        }
+
+        public object CheckData(int i, int j)
+        {
+            string value = DataTable.Rows[i][scheme.Columns[j].Name].ToString();
+            switch (scheme.Columns[j].Type)
+            {
+                case ("int"):
+                    {
+                        if (int.TryParse(value, out int data))
+                        {
+                            return data;
+                        }
+                        else
+                        {
+                            MessageBox.Show($"В сроке {i + 1} в столбце {scheme.Columns[j].Name} указаны некорректные данные");
+                            return null;
+                        }
+                    }
+                case ("uint"):
+                    {
+                        if (uint.TryParse(value, out uint data))
+                        {
+                            return data;
+                        }
+                        else
+                        {
+                            MessageBox.Show($"В сроке {i + 1} в столбце {scheme.Columns[j].Name} указаны некорректные данные");
+                            return null;
+                        }
+                    }
+                case ("datetime"):
+                    {
+                        if (DateTime.TryParse(value, out DateTime data))
+                        {
+                            return data;
+                        }
+                        else
+                        {
+                            MessageBox.Show($"В сроке {i + 1} в столбце {scheme.Columns[j].Name} указаны некорректные данные");
+                            return null;
+                        }
+                    }
+                case ("double"):
+                    {
+                        if (double.TryParse(value, out double data))
+                        {
+                            return data;
+                        }
+                        else
+                        {
+                            MessageBox.Show($"В сроке {i + 1} в столбце {scheme.Columns[j].Name} указаны некорректные данные");
+                            return null;
+                        }
+                    }
+                default:
+                    break;
+            }
+            return value;
+        }
     }
 }
