@@ -50,6 +50,8 @@ namespace DummyDB_5.ViewModel
 
         public ObservableCollection<Column> _columns = new ObservableCollection<Column>();
         public IEnumerable<Column> Columns => _columns;
+        public string folderPath { get; set; }
+        public CreateTableWindow Window { get; set; }
         
 
 
@@ -61,7 +63,7 @@ namespace DummyDB_5.ViewModel
 
         public ICommand CreateTable => new CommandDelegate(patameter =>
         {
-            if(MainViewModel.folderPath == "")
+            if(folderPath == "")
             {
                 MessageBox.Show("Вернитесь на главное окно и выберите папку");
                 return;
@@ -77,9 +79,34 @@ namespace DummyDB_5.ViewModel
                 Columns = columnsOfNewTable
             };
             string json = JsonSerializer.Serialize<TableScheme>(scheme);
-            File.WriteAllText($"{MainViewModel.folderPath}\\{TableName}.json", json);
-            File.Create($"{MainViewModel.folderPath}\\{TableName}.csv");
-            MessageBox.Show($"Таблица создана по пути {MainViewModel.folderPath}");
+            File.WriteAllText($"{folderPath}\\{TableName}.json", json);
+            CreateEmptyTable(scheme);
+            MessageBox.Show($"Таблица создана по пути {folderPath}");
+            Window.Close();
         });
+
+        public void CreateEmptyTable(TableScheme scheme)
+        {
+            string newFile = "";
+            foreach(Column column in scheme.Columns)
+            {
+                string addValue = "";
+                if (column.Type == "string")
+                {
+                    addValue = "";
+                }
+                else if (column.Type == "datetime")
+                {
+                    addValue = $"{DateTime.MinValue}";
+                }
+                else
+                {
+                    addValue = "0";
+                }
+                newFile = newFile + $"{addValue};";
+            }
+            newFile = newFile.Substring(0, newFile.Length - 1);
+            File.WriteAllText($"{folderPath}\\{TableName}.csv", newFile);
+        }
     }
 }

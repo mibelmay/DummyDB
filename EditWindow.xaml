@@ -7,9 +7,9 @@
         xmlns:local="clr-namespace:DummyDB_5"
         xmlns:vm="clr-namespace:DummyDB_5.ViewModel"
         mc:Ignorable="d"
-        Title="Редактирование таблицы" Height="450" Width="800">
+        Title="Редактирование таблицы" Height="600" Width="800">
 
-    <Grid RenderTransformOrigin="0.512,0.509">
+    <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="20"/>
             <RowDefinition Height="5"/>
@@ -25,15 +25,15 @@
             <ColumnDefinition Width="*"/>
             <ColumnDefinition Width="5"/>
         </Grid.ColumnDefinitions>
-        <TextBlock Text="Таблица" Grid.Column="1" Grid.Row="0" FontSize="15" Background="Lavender"/>
-        <DataGrid x:Name="dataGrid" ItemsSource="{Binding DataTable}" AutoGenerateColumns="True" Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="3" CanUserAddRows="False"/>
+        <TextBlock Text="Таблица" Grid.Column="1" Grid.Row="0" FontSize="15" Background="LightGray" Grid.ColumnSpan="3"/>
+        <DataGrid x:Name="dataGrid" ItemsSource="{Binding DataTable}" AutoGenerateColumns="True" Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="3" CanUserAddRows="False" AlternatingRowBackground="MistyRose"/>
 
-        <TextBlock Text="Редактирование схемы" Grid.Row="3" Grid.Column="1" FontSize="15" Background="Lavender" Height="20" VerticalAlignment="Top"/>
+        <TextBlock Text="Редактирование схемы" Grid.Row="3" Grid.Column="1" FontSize="15" Background="LightGray" Height="20" VerticalAlignment="Top"/>
         <TextBlock Text="Изменить имя таблицы:" Grid.Column="1" Grid.Row="3" HorizontalAlignment="Left" Height="19" VerticalAlignment="Top" Margin="23,25,0,0"/>
         <TextBox Text="{Binding TableName}" Grid.Column="1" Grid.Row="3" Margin="196,24,6,0" Height="20" VerticalAlignment="Top"/>
         <TextBlock Text="Переименовать столбец:" Grid.Column="1" Grid.Row="3" HorizontalAlignment="Left" Height="18" VerticalAlignment="Top" Margin="23,49,0,0"/>
-        <ComboBox ItemsSource="{Binding ColumnNames}" SelectedItem="{Binding SelectedColumn}" Grid.Column="1" Grid.Row="3" Height="18" VerticalAlignment="Top" Margin="5,72,196,0" d:LayoutOverrides="VerticalAlignment" Width="191"/>
-        <TextBox Text ="{Binding ColumnName}" Grid.Row="3" Grid.Column="1" Height="18" VerticalAlignment="Top" Margin="196,72,6,0" d:LayoutOverrides="VerticalAlignment"/>
+        <ComboBox ItemsSource="{Binding ColumnNames}" SelectedItem="{Binding SelectedColumn}" Grid.Column="1" Grid.Row="3" Height="18" VerticalAlignment="Top" Margin="5,72,196,0" Width="191"/>
+        <TextBox Text ="{Binding ColumnName}" Grid.Row="3" Grid.Column="1" Height="18" VerticalAlignment="Top" Margin="196,72,6,0" />
         <TextBlock Text ="Добавить столбец:" Grid.Row="3" Grid.Column="1" Margin="23,95,0,0" HorizontalAlignment="Left" VerticalAlignment="Top" />
         <ComboBox SelectedItem="{Binding NewColumnType}" Grid.Row="3" Grid.Column="1" Height="18" VerticalAlignment="Top" Margin="5,120,196,0" Width="191">
             <sys:String>int</sys:String>
@@ -45,11 +45,12 @@
         <TextBox Text="{Binding NewColumnName}" Grid.Row="3" Grid.Column="1" Height="18" VerticalAlignment="Top" Margin="196,120,6,0"/>
         <TextBlock Text="Удалить столбец:" Grid.Column="1" Grid.Row="3" Margin="49,158,248,0" Height="19" VerticalAlignment="Top"/>
         <TextBox Text="{Binding DeleteColumn}" Grid.Column="1" Grid.Row="3" Margin="196,158,0,0" Height="18" VerticalAlignment="Top" HorizontalAlignment="Left" Width="191"/>
-        <Button Command="{Binding Save}" Content="Сохранить" Grid.Column="1" Grid.Row="4"/>
+        <Button Command="{Binding Save}" Content="Сохранить схему" Grid.Column="1" Grid.Row="4" Background="MistyRose"/>
 
-        <TextBlock Text="Редактирование данных" Grid.Row="3" Grid.Column="3" FontSize="15" Background="Lavender" Height="20" VerticalAlignment="Top" d:LayoutOverrides="Height"/>
-        <TextBlock Text="Редактировать данные можно прямо в таблице" Grid.Column="3" Grid.Row="3" Margin="0,25,3,0" Height="19" VerticalAlignment="Top"/>
-        <Button Content="Добавить строку" Command="{Binding AddRow}" Grid.Column="3" Grid.Row="3" Height="30" Margin="0,52,0,118" HorizontalAlignment="Center"/>
-        <Button Command="{Binding LoadDataTable}" Content ="Загрузить изменения" Grid.Column="3" Grid.Row="4"/>
+        <TextBlock Text="Редактирование данных" Grid.Row="3" Grid.Column="3" FontSize="15" Height="20" VerticalAlignment="Top" Background="LightGray"/>
+        <Button Content="Добавить строку" Command="{Binding AddRow}" Grid.Column="3" Grid.Row="3" Height="30" Margin="0,30,0,0" VerticalAlignment="Top" Background="MistyRose"/>
+        <Button Content="Удалить строку" Command="{Binding DeleteRow}" Grid.Column="3" Grid.Row="3" Height="30" Margin="0,66,0,0" VerticalAlignment="Top" Background="MistyRose"/>
+        <Button Command="{Binding LoadDataTable}" Content ="Сохранить данные" Grid.Column="3" Grid.Row="4" Background="MistyRose"/>
+
     </Grid>
 </Window>

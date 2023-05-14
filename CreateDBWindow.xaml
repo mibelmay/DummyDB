@@ -15,20 +15,19 @@
     <Grid VerticalAlignment="Top">
         <Grid.RowDefinitions>
             <RowDefinition Height="20" />
+            <RowDefinition Height="30" />
             <RowDefinition Height="20" />
-            <RowDefinition Height="20" />
-            <RowDefinition Height="20" />
-            <RowDefinition Height="20" />
-            <RowDefinition Height="50"/>
+            <RowDefinition Height="30" />
+            <RowDefinition Height="50" />
+            <RowDefinition Height="35"/>
         </Grid.RowDefinitions>
 
-        <TextBlock Grid.Row="0" HorizontalAlignment="Center">Ваше название</TextBlock>
-        <TextBox x:Name="DB_name" Text="{Binding Name}" Grid.Row="1" Margin="100,0,100,0"/>
-        <TextBlock Text="Выберите место хранения БД" Grid.Row="2" HorizontalAlignment="Center"/>
-        <Button Command="{Binding Choose_Place}" Grid.Row="3" Content="Выбрать место" Margin="100,0,100,0"/>
+        <TextBlock Grid.Row="0" TextAlignment="Center" Background="LightGray">Ваше название</TextBlock>
+        <TextBox x:Name="DB_name" Text="{Binding Name}" Grid.Row="1" Margin="80,5,80,5"/>
+        <TextBlock Text="Выберите место хранения БД" Grid.Row="2" TextAlignment="Center" Background="LightGray"/>
+        <Button Command="{Binding Choose_Place}" Grid.Row="3" Content="Выбрать место" Margin="80,5,80,5" Background="MistyRose"/>
         <TextBlock Text="{Binding Path}" HorizontalAlignment="Center"  Grid.Row="4" Margin="0,0,10,0"/>
-        <WrapPanel Grid.Row="5" HorizontalAlignment="Right" Margin="0,15,10,0">
-            <Button IsDefault="True" Command="{Binding CreateDB_Click}" MinWidth="60" Content="OK"/>
-        </WrapPanel>
+        <Button IsDefault="True" Command="{Binding CreateDB_Click}" Grid.Row="5" Content="OK" Background="MistyRose"/>
+        
     </Grid>
 </Window>

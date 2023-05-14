@@ -7,7 +7,6 @@ using System.Windows;
 using System.Windows.Input;
 using System.Windows.Controls;
 using System.Data;
-//using System.Windows.Documents;
 
 namespace DummyDB_5.ViewModel
 {
@@ -37,7 +36,7 @@ namespace DummyDB_5.ViewModel
             }
         }
         public DataTable selectedTable { get; set; }
-        public static string folderPath { get; set; }
+        public string folderPath { get; set; }
 
 
 
@@ -68,6 +67,7 @@ namespace DummyDB_5.ViewModel
         {
             List<TableScheme> schemes = new List<TableScheme>();
             ((MainWindow)System.Windows.Application.Current.MainWindow).dataTree.Items.Clear();
+            ((MainWindow)System.Windows.Application.Current.MainWindow).dataGrid.Columns.Clear();
             foreach (string file in Directory.EnumerateFiles(folderPath))
             {
                 if (file.Contains(".json"))
@@ -98,6 +98,7 @@ namespace DummyDB_5.ViewModel
                                 treeItem.Items.Add(key.Name + " - " + key.Type);
                             }
                             ((MainWindow)System.Windows.Application.Current.MainWindow).dataTree.Items.Add(treeItem);
+
                             break;
                         }
                         catch (Exception ex) { continue; }
@@ -148,6 +149,9 @@ namespace DummyDB_5.ViewModel
         public ICommand CreateDB_Click => new CommandDelegate(parameter =>
         {
             CreateDBWindow CreateDB = new CreateDBWindow();
+            CreateDBViewModel vmCreate = new CreateDBViewModel();
+            CreateDB.DataContext = vmCreate;
+            vmCreate.Window = CreateDB;
             CreateDB.Owner = ((MainWindow)System.Windows.Application.Current.MainWindow);
             CreateDB.ShowDialog();
         });
@@ -155,6 +159,10 @@ namespace DummyDB_5.ViewModel
         public ICommand CreateTable_Click => new CommandDelegate(parameter =>
         {
             CreateTableWindow CreateTable = new CreateTableWindow();
+            CreateTableViewModel vmCreate = new CreateTableViewModel();
+            CreateTable.DataContext = vmCreate;
+            vmCreate.folderPath = folderPath;
+            vmCreate.Window = CreateTable;
             CreateTable.Owner = ((MainWindow)System.Windows.Application.Current.MainWindow);
             CreateTable.ShowDialog();
         });
@@ -162,11 +170,10 @@ namespace DummyDB_5.ViewModel
         public ICommand Edit_Click => new CommandDelegate(parameter =>
         {
             if (selectedTable == null) return;
-            EditWindow NewWindow = new EditWindow();
+            EditWindow newWindow = new EditWindow();
             EditViewModel vmEdit = new EditViewModel();
-            NewWindow.DataContext = vmEdit;
-            vmEdit.window = NewWindow;
-
+            newWindow.DataContext = vmEdit;
+            vmEdit.dataGrid = newWindow.dataGrid;
             vmEdit.DataTable = selectedTable;
             vmEdit.TableName = selectedTable.TableName;
             foreach (var pair in schemeTablePairs)
@@ -185,8 +192,9 @@ namespace DummyDB_5.ViewModel
             }
             vmEdit.oldFileName = selectedTable.TableName;
             vmEdit.folderPath = folderPath;
-            NewWindow.Owner = ((MainWindow)System.Windows.Application.Current.MainWindow);
-            NewWindow.ShowDialog();
+            vmEdit.schemeTablePairs = schemeTablePairs;
+            newWindow.Owner = ((MainWindow)System.Windows.Application.Current.MainWindow);
+            newWindow.ShowDialog();
         });
 
     }

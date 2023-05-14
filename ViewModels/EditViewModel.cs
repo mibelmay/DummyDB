@@ -9,13 +9,11 @@ using System;
 using System.Windows.Forms;
 using System.Windows.Controls;
 using System.Text;
-using System.Windows.Markup;
 
 namespace DummyDB_5.ViewModel
 {
     public class EditViewModel : ViewModel
     {
-        public EditWindow window;
         private DataTable _dataTable;
         public DataTable DataTable
         {
@@ -78,17 +76,9 @@ namespace DummyDB_5.ViewModel
             }
         }
         public string folderPath;
-        //public void AddRowToFile(Row row)
-        //{
-        //    string path = $"{folderPath}\\{TableName}.csv";
-        //    string newRow = "";
-        //    foreach(Column column in scheme.Columns)
-        //    {
-        //        newRow = newRow + $"{row.Data[column]};";
-        //    }
-        //    newRow = newRow.Substring(0, newRow.Length - 1);
-        //    File.AppendAllText(path, newRow);
-        //}
+        public DataGrid dataGrid { get; set; }
+        public Dictionary<TableScheme, Table> schemeTablePairs { get; set; }
+
 
         public ICommand Save => new CommandDelegate(parameter =>
         {
@@ -226,7 +216,7 @@ namespace DummyDB_5.ViewModel
         {
             DataTable.Clear();
             DataTable dataTable = new DataTable();
-            foreach (var pair in MainViewModel.schemeTablePairs)
+            foreach (var pair in schemeTablePairs)
             {
                 if (pair.Key.Name == _tableName)
                 {
@@ -264,14 +254,55 @@ namespace DummyDB_5.ViewModel
         });
         public ICommand LoadDataTable => new CommandDelegate(param =>
         {
-            if(!AreChangesValid())
+            if(!LoadChanges())
             {
                 return;
             }
+            SaveChangesToFile();
             DisplayTable();
         });
 
-        public bool AreChangesValid()
+        public ICommand DeleteRow => new CommandDelegate(param =>
+        {
+            int index = dataGrid.SelectedIndex;
+            if (index == -1)
+            {
+                MessageBox.Show("Вы не выбрали строку для удаления");
+                return;
+            }
+            DataRow selectedRow = DataTable.Rows[index];
+            string row = "| ";
+            for(int i = 0; i < scheme.Columns.Count; i++)
+            {
+                row = row + $"{selectedRow[scheme.Columns[i].Name]} | ";
+            }
+            DialogResult dialogResult = System.Windows.Forms.MessageBox.Show($"Вы уверены что хотите удалить строку\n{row}?", "Подтверждение", MessageBoxButtons.YesNo);
+            if (dialogResult == DialogResult.No)
+            {
+                return;
+            }
+            DataTable.Rows[index].Delete();
+            table.Rows.Remove(table.Rows[index]);
+            LoadChanges();
+        });
+
+        public void SaveChangesToFile()
+        {
+            StringBuilder newFile = new StringBuilder();
+            foreach(Row row in table.Rows)
+            {
+                string newRow = "";
+                foreach (Column column in scheme.Columns)
+                {
+                    newRow = newRow + $"{row.Data[column]};" ;
+                }
+                newRow = newRow.Substring(0, newRow.Length - 1);
+                newFile.AppendLine(newRow);
+            }
+            File.WriteAllText(folderPath + $"\\{TableName}.csv", newFile.ToString());
+        }
+
+        public bool LoadChanges()
         {
             int countOfRows = DataTable.Rows.Count;
             if (table.Rows.Count < DataTable.Rows.Count)

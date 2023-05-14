@@ -12,6 +12,7 @@ namespace DummyDB_5.ViewModel
 {
     public class CreateDBViewModel : ViewModel
     {
+        public CreateDBWindow Window { get; set; }
         private string _path;
         public string Path
         {
@@ -53,6 +54,7 @@ namespace DummyDB_5.ViewModel
                 return;
             }
             Directory.CreateDirectory(path);
+            Window.Close();
         });
     }
 }
