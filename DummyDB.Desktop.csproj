@@ -10,7 +10,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Views\" />
+    <ProjectReference Include="..\DummyDB.Core\DummyDB.Core.csproj" />
   </ItemGroup>
 
 </Project>

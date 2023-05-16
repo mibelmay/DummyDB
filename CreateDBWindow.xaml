@@ -1,13 +1,13 @@
-﻿<Window x:Class="DummyDB_5.CreateDBWindow"
+﻿<Window x:Class="DummyDB.CreateDBWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:DummyDB_5"
-        xmlns:vm="clr-namespace:DummyDB_5.ViewModel"
+        xmlns:local="clr-namespace:DummyDB"
+        xmlns:vm="clr-namespace:DummyDB.ViewModel"
         mc:Ignorable="d"
         ResizeMode="NoResize"
-        Title="Create DataBase" Height="200" Width="450">
+        Title="Create DataBase" Height="300" Width="400">
     <Window.DataContext>
         <vm:CreateDBViewModel/>
     </Window.DataContext>
@@ -18,8 +18,8 @@
             <RowDefinition Height="30" />
             <RowDefinition Height="20" />
             <RowDefinition Height="30" />
-            <RowDefinition Height="50" />
-            <RowDefinition Height="35"/>
+            <RowDefinition Height="130" />
+            <RowDefinition Height="30"/>
         </Grid.RowDefinitions>
 
         <TextBlock Grid.Row="0" TextAlignment="Center" Background="LightGray">Ваше название</TextBlock>

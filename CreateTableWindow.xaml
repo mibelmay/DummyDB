@@ -1,10 +1,10 @@
-﻿<Window x:Class="DummyDB_5.CreateTableWindow"
+﻿<Window x:Class="DummyDB.CreateTableWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:DummyDB_5"
-        xmlns:vm="clr-namespace:DummyDB_5.ViewModel"
+        xmlns:local="clr-namespace:DummyDB"
+        xmlns:vm="clr-namespace:DummyDB.ViewModel"
         xmlns:sys="clr-namespace:System;assembly=mscorlib"
         mc:Ignorable="d"
         Title="CreateTableWindow" Height="500" Width="400">

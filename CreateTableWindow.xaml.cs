@@ -10,10 +10,10 @@ using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using DummyDB_5.ViewModel;
+using DummyDB.ViewModel;
 using System.Windows.Shapes;
 
-namespace DummyDB_5
+namespace DummyDB
 {
     /// <summary>
     /// Interaction logic for CreateTableWindow.xaml

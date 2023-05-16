@@ -1,4 +1,4 @@
-﻿using DummyDB_5.ViewModel;
+﻿using DummyDB.ViewModel;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -14,7 +14,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 
-namespace DummyDB_5
+namespace DummyDB
 {
     /// <summary>
     /// Interaction logic for EditWindow.xaml

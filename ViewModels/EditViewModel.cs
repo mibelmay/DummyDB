@@ -1,4 +1,4 @@
-﻿using DummyDB_5.Model;
+﻿using DummyDB.Core;
 using System.Text.Json;
 using System.Data;
 using System.Windows.Input;
@@ -10,7 +10,7 @@ using System.Windows.Forms;
 using System.Windows.Controls;
 using System.Text;
 
-namespace DummyDB_5.ViewModel
+namespace DummyDB.ViewModel
 {
     public class EditViewModel : ViewModel
     {

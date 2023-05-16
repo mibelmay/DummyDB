@@ -1,4 +1,4 @@
-﻿using DummyDB_5.Model;
+﻿using DummyDB.Core;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -11,7 +11,7 @@ using System.Xml.Linq;
 using System.Windows;
 using System.IO;
 
-namespace DummyDB_5.ViewModel
+namespace DummyDB.ViewModel
 {
     public class CreateTableViewModel : ViewModel
     {

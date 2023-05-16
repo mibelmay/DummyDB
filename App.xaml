@@ -1,7 +1,7 @@
-﻿<Application x:Class="DummyDB_5.App"
+﻿<Application x:Class="DummyDB.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:local="clr-namespace:DummyDB_5"
+             xmlns:local="clr-namespace:DummyDB"
              StartupUri="MainWindow.xaml">
     <Application.Resources>
          

@@ -7,7 +7,7 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DummyDB_5.ViewModel
+namespace DummyDB.ViewModel
 {
     public class ViewModel : INotifyPropertyChanged
     {

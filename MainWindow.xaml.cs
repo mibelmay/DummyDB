@@ -1,5 +1,4 @@
-﻿using DummyDB_5.Model;
-using DummyDB_5.ViewModel;
+﻿using DummyDB.ViewModel;
 using System;
 using System.ComponentModel;
 using System.IO;
@@ -8,7 +7,7 @@ using System.Windows.Controls;
 using System.Windows.Forms;
 
 
-namespace DummyDB_5
+namespace DummyDB
 {
     public partial class MainWindow : Window
     {

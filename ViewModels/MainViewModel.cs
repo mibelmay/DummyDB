@@ -1,4 +1,4 @@
-﻿using DummyDB_5.Model;
+﻿using DummyDB.Core;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -8,7 +8,7 @@ using System.Windows.Input;
 using System.Windows.Controls;
 using System.Data;
 
-namespace DummyDB_5.ViewModel
+namespace DummyDB.ViewModel
 {
     public class MainViewModel : ViewModel
     {
@@ -86,7 +86,7 @@ namespace DummyDB_5.ViewModel
                     {
                         try
                         {
-                            table = ReadTable.Read(scheme, file);
+                            table = TableReader.Read(scheme, file);
                             schemeTablePairs.Add(scheme, table);
                             TreeViewItem treeItem = new TreeViewItem();
                             string[] line = file.Split("\\");

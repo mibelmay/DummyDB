@@ -8,7 +8,7 @@ using System.Windows.Input;
 using System.IO;
 using System.Windows;
 
-namespace DummyDB_5.ViewModel
+namespace DummyDB.ViewModel
 {
     public class CreateDBViewModel : ViewModel
     {
