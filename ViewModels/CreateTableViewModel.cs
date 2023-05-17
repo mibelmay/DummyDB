@@ -49,8 +49,15 @@ namespace DummyDB.ViewModel
         }
 
         public ObservableCollection<Column> _columns = new ObservableCollection<Column>();
-        public IEnumerable<Column> Columns => _columns;
-        public string folderPath { get; set; }
+        public IEnumerable<Column> Columns
+        {
+            get
+            {
+                return _columns;
+            }
+        }
+
+        public string FolderPath { get; set; }
         public CreateTableWindow Window { get; set; }
         
 
@@ -63,9 +70,14 @@ namespace DummyDB.ViewModel
 
         public ICommand CreateTable => new CommandDelegate(patameter =>
         {
-            if(folderPath == "")
+            if(FolderPath == "")
             {
                 MessageBox.Show("Вернитесь на главное окно и выберите папку");
+                return;
+            }
+            if (TableName == "" || TableName == null || _columns.Count == 0)
+            {
+                MessageBox.Show("Заполните все поля");
                 return;
             }
             List<Column> columnsOfNewTable = new List<Column>();
@@ -79,9 +91,9 @@ namespace DummyDB.ViewModel
                 Columns = columnsOfNewTable
             };
             string json = JsonSerializer.Serialize<TableScheme>(scheme);
-            File.WriteAllText($"{folderPath}\\{TableName}.json", json);
+            File.WriteAllText($"{FolderPath}\\{TableName}.json", json);
             CreateEmptyTable(scheme);
-            MessageBox.Show($"Таблица создана по пути {folderPath}");
+            MessageBox.Show($"Таблица создана по пути {FolderPath}");
             Window.Close();
         });
 
@@ -106,7 +118,7 @@ namespace DummyDB.ViewModel
                 newFile = newFile + $"{addValue};";
             }
             newFile = newFile.Substring(0, newFile.Length - 1);
-            File.WriteAllText($"{folderPath}\\{TableName}.csv", newFile);
+            File.WriteAllText($"{FolderPath}\\{TableName}.csv", newFile);
         }
     }
 }

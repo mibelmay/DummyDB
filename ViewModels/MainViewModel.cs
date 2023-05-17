@@ -34,24 +34,23 @@ namespace DummyDB.ViewModel
                 OnPropertyChanged();    
             }
         }
-        public DataTable selectedTable { get; set; }
+        public DataTable SelectedTable { get; set; }
         public string folderPath { get; set; }
 
         public ICommand OpenSourceClick => new CommandDelegate(parameter =>
         {
-            ((MainWindow)System.Windows.Application.Current.MainWindow).dataTree.Items.Clear();
+            ((MainWindow)System.Windows.Application.Current.MainWindow).dataGrid.Columns.Clear();
             schemeTablePairs.Clear();
             FolderBrowserDialog openFolderDialog = new FolderBrowserDialog();
             folderPath = "";
             Message = "";
-
-            if ( openFolderDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+            if (openFolderDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
             {
                 folderPath = openFolderDialog.SelectedPath;
             }
             if (folderPath == "")
             {
-                Message = "Вы не выбрали папку";
+                Message = "Папка не выбрана";
                 return;
             }
             string[] splits = folderPath.Split('\\');
@@ -62,18 +61,27 @@ namespace DummyDB.ViewModel
 
         public void LoadTreeView()
         {
-            List<TableScheme> schemes = new List<TableScheme>();
             ((MainWindow)System.Windows.Application.Current.MainWindow).dataTree.Items.Clear();
-            ((MainWindow)System.Windows.Application.Current.MainWindow).dataGrid.Columns.Clear();
+            List<TableScheme> schemes = LoadSchemes();
+            LoadTables(schemes);
+        }
+
+        public List<TableScheme> LoadSchemes()
+        {
+            List<TableScheme> schemes = new List<TableScheme>();
             foreach (string file in Directory.EnumerateFiles(folderPath))
             {
                 if (file.Contains(".json"))
                 {
-                    string pathTable = file.Replace("json", "csv");
                     TableScheme scheme = TableScheme.ReadFile(file);
                     schemes.Add(scheme);
                 }
             }
+            return schemes;
+        }
+
+        public void LoadTables(List<TableScheme> schemes)
+        {
             foreach (string file in Directory.EnumerateFiles(folderPath))
             {
                 if (file.Contains(".csv"))
@@ -95,7 +103,7 @@ namespace DummyDB.ViewModel
                                 treeItem.Items.Add(key.Name + " - " + key.Type);
                             }
                             ((MainWindow)System.Windows.Application.Current.MainWindow).dataTree.Items.Add(treeItem);
-
+                            schemes.Remove(scheme);
                             break;
                         }
                         catch (Exception ex) { continue; }
@@ -136,7 +144,7 @@ namespace DummyDB.ViewModel
                 }
             }
             DataTable = dataTable;
-            selectedTable = dataTable;
+            SelectedTable = dataTable;
         }
 
         public ICommand Update_Click => new CommandDelegate(parameter =>
@@ -158,7 +166,7 @@ namespace DummyDB.ViewModel
             CreateTableWindow CreateTable = new CreateTableWindow();
             CreateTableViewModel vmCreate = new CreateTableViewModel();
             CreateTable.DataContext = vmCreate;
-            vmCreate.folderPath = folderPath;
+            vmCreate.FolderPath = folderPath;
             vmCreate.Window = CreateTable;
             CreateTable.Owner = ((MainWindow)System.Windows.Application.Current.MainWindow);
             CreateTable.ShowDialog();
@@ -166,16 +174,16 @@ namespace DummyDB.ViewModel
 
         public ICommand Edit_Click => new CommandDelegate(parameter =>
         {
-            if (selectedTable == null) return;
+            if (SelectedTable == null) return;
             EditWindow newWindow = new EditWindow();
             EditViewModel vmEdit = new EditViewModel();
             newWindow.DataContext = vmEdit;
             vmEdit.dataGrid = newWindow.dataGrid;
-            vmEdit.DataTable = selectedTable;
-            vmEdit.TableName = selectedTable.TableName;
+            vmEdit.DataTable = SelectedTable;
+            vmEdit.TableName = SelectedTable.TableName;
             foreach (var pair in schemeTablePairs)
             {
-                if (pair.Key.Name == selectedTable.TableName) 
+                if (pair.Key.Name == SelectedTable.TableName) 
                 { 
                     vmEdit.scheme = pair.Key; 
                     vmEdit.table = pair.Value; 
@@ -187,7 +195,7 @@ namespace DummyDB.ViewModel
             {
                 vmEdit.ColumnNames.Add(column.Name);
             }
-            vmEdit.oldFileName = selectedTable.TableName;
+            vmEdit.oldFileName = SelectedTable.TableName;
             vmEdit.folderPath = folderPath;
             vmEdit.schemeTablePairs = schemeTablePairs;
             newWindow.Owner = ((MainWindow)System.Windows.Application.Current.MainWindow);
