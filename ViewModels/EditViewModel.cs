@@ -270,6 +270,11 @@ namespace DummyDB.ViewModel
                 MessageBox.Show("Вы не выбрали строку для удаления");
                 return;
             }
+            if (index >= table.Rows.Count)
+            {
+                MessageBox.Show("Сначала сохраните добавленные строки");
+                return;
+            }
             DataRow selectedRow = DataTable.Rows[index];
             string row = "| ";
             for(int i = 0; i < scheme.Columns.Count; i++)
@@ -330,7 +335,7 @@ namespace DummyDB.ViewModel
                     for (int j = 0; j < scheme.Columns.Count; j++)
                     {
                         object data = CheckData(i, j);
-                        if (data == null) { MessageBox.Show($"Невозможно добавить строку {i + 1}, т.к. в ней некорректные данные"); return false; }
+                        if (data == null) { return false; }
                         newRow.Data.Add(scheme.Columns[j], data);
                     }
                     table.Rows.Add(newRow);

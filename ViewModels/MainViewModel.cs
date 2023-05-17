@@ -12,8 +12,7 @@ namespace DummyDB.ViewModel
 {
     public class MainViewModel : ViewModel
     {
-        
-        public static Dictionary<TableScheme, Table> schemeTablePairs = new Dictionary<TableScheme, Table>();
+        public Dictionary<TableScheme, Table> schemeTablePairs = new Dictionary<TableScheme, Table>();
        
         private DataTable _dataTable;
         public DataTable DataTable
@@ -37,8 +36,6 @@ namespace DummyDB.ViewModel
         }
         public DataTable selectedTable { get; set; }
         public string folderPath { get; set; }
-
-
 
         public ICommand OpenSourceClick => new CommandDelegate(parameter =>
         {
