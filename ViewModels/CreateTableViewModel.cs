@@ -1,13 +1,8 @@
 ﻿using DummyDB.Core;
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Text.Json;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Input;
-using System.Xml.Linq;
 using System.Windows;
 using System.IO;
 
@@ -36,7 +31,6 @@ namespace DummyDB.ViewModel
                 OnPropertyChanged();
             }
         }
-
         private string _type;
         public string Type
         {
@@ -47,25 +41,31 @@ namespace DummyDB.ViewModel
                 OnPropertyChanged();
             }
         }
-
-        public ObservableCollection<Column> _columns = new ObservableCollection<Column>();
-        public IEnumerable<Column> Columns
+        private List<Column> _columns = new List<Column>();
+        public List<Column> Columns
         {
-            get
-            {
-                return _columns;
-            }
+            get { return _columns; }
+            set { _columns = value; OnPropertyChanged();}
         }
-
         public string FolderPath { get; set; }
         public CreateTableWindow Window { get; set; }
         
-
-
         public ICommand AddColumn => new CommandDelegate(patameter =>
         {
-            if (ColumnName == "" || Type == null) return;
+            if (ColumnName == "" || Type == null)
+            {
+                return;
+            }
+            foreach (Column column in Columns)
+            {
+                if(column.Name == ColumnName)
+                {
+                    MessageBox.Show($"Столбец с именем {ColumnName} уже добавлен в таблицу");
+                    return;
+                }
+            }
             _columns.Add(new Column { Name = $"{ColumnName}", Type = $"{Type}"});
+            UpdateColumns();
         });
 
         public ICommand CreateTable => new CommandDelegate(patameter =>
@@ -120,5 +120,16 @@ namespace DummyDB.ViewModel
             newFile = newFile.Substring(0, newFile.Length - 1);
             File.WriteAllText($"{FolderPath}\\{TableName}.csv", newFile);
         }
+
+        public void UpdateColumns()
+        {
+            List<Column> newColumns = new List<Column>();
+            foreach (Column column in _columns)
+            {
+                newColumns.Add(column);
+            }
+            Columns = newColumns;
+        }
     }
+
 }

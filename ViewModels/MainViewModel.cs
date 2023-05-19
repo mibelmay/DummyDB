@@ -148,6 +148,10 @@ namespace DummyDB.ViewModel
 
         public ICommand Update_Click => new CommandDelegate(parameter =>
         {
+            if (folderPath == null || folderPath == "")
+            {
+                return;
+            }
             LoadTreeView();
         });
         public ICommand CreateDB_Click => new CommandDelegate(parameter =>
@@ -162,6 +166,11 @@ namespace DummyDB.ViewModel
 
         public ICommand CreateTable_Click => new CommandDelegate(parameter =>
         {
+            if(folderPath == null || folderPath == "")
+            {
+                Message = "Выберите путь до базы данных";
+                return;
+            }
             CreateTableWindow CreateTable = new CreateTableWindow();
             CreateTableViewModel vmCreate = new CreateTableViewModel();
             CreateTable.DataContext = vmCreate;
