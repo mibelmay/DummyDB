@@ -63,7 +63,18 @@ namespace DummyDB.ViewModel
         {
             ((MainWindow)System.Windows.Application.Current.MainWindow).dataTree.Items.Clear();
             List<TableScheme> schemes = LoadSchemes();
-            LoadTables(schemes);
+            foreach (string file in Directory.EnumerateFiles(folderPath))
+            {
+                if (file.Contains(".csv"))
+                {
+                    Table table = LoadTable(schemes, file);
+                    if (table == null)
+                    {
+                        string[] line = file.Split("\\");
+                        Message = $"Не найдена схема для таблицы {line[line.Length - 1].Replace(".csv", "")}";
+                    }
+                }
+            }
         }
 
         public List<TableScheme> LoadSchemes()
@@ -80,46 +91,34 @@ namespace DummyDB.ViewModel
             return schemes;
         }
 
-        public void LoadTables(List<TableScheme> schemes)
+        public Table LoadTable(List<TableScheme> schemes, string file)
         {
-            foreach (string file in Directory.EnumerateFiles(folderPath))
+            Table table = new Table();
+            foreach (TableScheme scheme in schemes)
             {
-                if (file.Contains(".csv"))
+                table = TableReader.Read(scheme, file);
+                if (table == null)
                 {
-                    Table table = new Table();
-                    foreach (TableScheme scheme in schemes)
-                    {
-                        try
-                        {
-                            table = TableReader.Read(scheme, file);
-                            schemeTablePairs.Add(scheme, table);
-                            TreeViewItem treeItem = new TreeViewItem();
-                            string[] line = file.Split("\\");
-                            treeItem.Header = (line[line.Length - 1]).Substring(0, line[line.Length - 1].Length - 4);
-                            treeItem.Selected += TableTreeSelected;
-
-                            foreach (Column key in scheme.Columns)
-                            {
-                                treeItem.Items.Add(key.Name + " - " + key.Type);
-                            }
-                            ((MainWindow)System.Windows.Application.Current.MainWindow).dataTree.Items.Add(treeItem);
-                            schemes.Remove(scheme);
-                            break;
-                        }
-                        catch (Exception ex) { continue; }
-                    }
-                    if (table.Rows == null)
-                    {
-                        string[] line = file.Split("\\");
-                        Message = $"Не найдена схема для таблицы {line[line.Length - 1].Replace(".csv", "")} или в таблице некорректные данные";
-                    }
+                    continue;
                 }
+                schemeTablePairs.Add(scheme, table);
+                TreeViewItem treeItem = new TreeViewItem();
+                string[] line = file.Split("\\");
+                treeItem.Header = (line[line.Length - 1]).Substring(0, line[line.Length - 1].Length - 4);
+                treeItem.Selected += TableTreeSelected;
+                foreach (Column column in scheme.Columns)
+                {
+                    treeItem.Items.Add(column.Name + " - " + column.Type);
+                }
+                ((MainWindow)System.Windows.Application.Current.MainWindow).dataTree.Items.Add(treeItem);
+                schemes.Remove(scheme);
+                break;
             }
+            return table;
         }
 
         private void TableTreeSelected(object sender, RoutedEventArgs e)
         {
-            ((MainWindow)System.Windows.Application.Current.MainWindow).dataGrid.Columns.Clear();
             DataTable dataTable = new DataTable();
             string tableName = ((TreeViewItem)sender).Header.ToString();
             foreach(var pair in schemeTablePairs)
@@ -197,11 +196,8 @@ namespace DummyDB.ViewModel
             }
             vmEdit.oldFileName = SelectedTable.TableName;
             vmEdit.folderPath = folderPath;
-            vmEdit.schemeTablePairs = schemeTablePairs;
             newWindow.Owner = ((MainWindow)System.Windows.Application.Current.MainWindow);
             newWindow.ShowDialog();
         });
-
     }
-
 }

@@ -77,8 +77,6 @@ namespace DummyDB.ViewModel
         }
         public string folderPath;
         public DataGrid dataGrid { get; set; }
-        public Dictionary<TableScheme, Table> schemeTablePairs { get; set; }
-
 
         public ICommand Save => new CommandDelegate(parameter =>
         {
@@ -216,26 +214,19 @@ namespace DummyDB.ViewModel
         {
             DataTable.Clear();
             DataTable dataTable = new DataTable();
-            foreach (var pair in schemeTablePairs)
+            dataTable.TableName = TableName;
+            foreach(Column column in scheme.Columns)
             {
-                if (pair.Key.Name == _tableName)
+                dataTable.Columns.Add(column.Name);
+            }
+            for (int i = 0; i < table.Rows.Count; i++)
+            {
+                DataRow newRow = dataTable.NewRow();
+                foreach (var rowPair in table.Rows[i].Data)
                 {
-                    dataTable.TableName = _tableName;
-                    foreach (Column column in pair.Key.Columns)
-                    {
-                        dataTable.Columns.Add(column.Name);
-                    }
-                    for (int i = 0; i < pair.Value.Rows.Count; i++)
-                    {
-                        DataRow newRow = dataTable.NewRow();
-                        foreach (var rowPair in pair.Value.Rows[i].Data)
-                        {
-                            newRow[rowPair.Key.Name] = rowPair.Value;
-                        }
-                        dataTable.Rows.Add(newRow);
-                    }
-                    break;
+                    newRow[rowPair.Key.Name] = rowPair.Value;
                 }
+                dataTable.Rows.Add(newRow);
             }
             DataTable = dataTable;
         }
