@@ -131,5 +131,4 @@ namespace DummyDB.ViewModel
             Columns = newColumns;
         }
     }
-
 }

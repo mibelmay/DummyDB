@@ -4,7 +4,6 @@ using System.Data;
 using System.Windows.Input;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System;
 using System.Windows.Forms;
 using System.Windows.Controls;
@@ -31,7 +30,7 @@ namespace DummyDB.ViewModel
                 OnPropertyChanged();
             }
         }
-        public string oldFileName;
+        public string oldFileName { get; set; }
         public TableScheme scheme;
         public Table table;
         private List<string> _columnNames;
@@ -67,7 +66,7 @@ namespace DummyDB.ViewModel
             set { _newColumnType = value; OnPropertyChanged(); }
         }
         private string _deleteColumn;
-        public string DeleteColumn
+        public string DeletedColumn
         {
             get { return _deleteColumn; }
             set
@@ -75,17 +74,16 @@ namespace DummyDB.ViewModel
                 _deleteColumn = value; OnPropertyChanged();
             }
         }
-        public string folderPath;
+        public string folderPath { get; set; }
         public DataGrid dataGrid { get; set; }
 
-        public ICommand Save => new CommandDelegate(parameter =>
+        public ICommand SaveScheme => new CommandDelegate(parameter =>
         {
-            string[] csv = File.ReadAllLines($"{folderPath}\\{oldFileName}.csv");
-            File.Delete($"{folderPath}\\{oldFileName}.csv");
             if (TableName != scheme.Name)
             {
                 scheme.Name = TableName;
                 File.Delete(folderPath + $"\\{oldFileName}.json");
+                File.Delete(folderPath + $"\\{oldFileName}.csv");
             }
             if (SelectedColumn != null && ColumnName != "" && ColumnName != null)
             {
@@ -93,20 +91,16 @@ namespace DummyDB.ViewModel
             }
             if (NewColumnType != null && NewColumnName != "" && NewColumnName != null)
             {
-                csv = AddNewColumnToTable(csv, NewColumnType);
+                AddNewColumn();
             }
-            if (DeleteColumn != null && DeleteColumn != "")
+            if (DeletedColumn != null && DeletedColumn != "")
             {
-                DialogResult dialogResult = System.Windows.Forms.MessageBox.Show("Вы уверены что хотите удалить столбец?", "Some Title", MessageBoxButtons.YesNo);
-                if (dialogResult == DialogResult.Yes)
-                {
-                    csv = DeleteColumnFromTable(csv);
-                }
+                DeleteColumn();
             }
             string json = JsonSerializer.Serialize(scheme);
             File.WriteAllText($"{folderPath}\\{scheme.Name}.json", json);
-            File.WriteAllText($"{folderPath}\\{scheme.Name}.csv", String.Join("\n", csv));
-            ColumnName = DeleteColumn = NewColumnName = "";
+            SaveChangesToCsv();
+            ColumnName = DeletedColumn = NewColumnName = "";
             SelectedColumn = NewColumnType = null;
             DisplayTable();
         });
@@ -140,17 +134,16 @@ namespace DummyDB.ViewModel
             UpdateColumnNames();
         }
 
-        public string[] DeleteColumnFromTable(string[] csv)
+        public void DeleteColumn()
         {
-            if (!IfColumnExist(DeleteColumn))
+            DialogResult dialogResult = MessageBox.Show("Вы уверены что хотите удалить столбец?", "Подтверждение", MessageBoxButtons.YesNo);
+            if (dialogResult == DialogResult.No)
             {
-                System.Windows.MessageBox.Show($"Колонки с названием {DeleteColumn} нет в таблице");
-                return csv;
+                return;
             }
-            int count = 0;
             foreach (Column column in scheme.Columns)
             {
-                if (DeleteColumn == column.Name)
+                if (DeletedColumn == column.Name)
                 {
                     ColumnNames.Remove(column.Name);
                     scheme.Columns.Remove(column);
@@ -160,59 +153,45 @@ namespace DummyDB.ViewModel
                     }
                     break;
                 }
-                count += 1;
             }
-            string[] newFile = new string[csv.Length];
-            for (int i = 0; i < csv.Length; i++)
-            {
-                List<string> columns = (csv[i].Split(";")).ToList();
-                columns.RemoveAt(count);
-                string newLine = String.Join(";", columns);
-                if (newLine[newLine.Length - 1] == ';')
-                {
-                    newLine.Remove(newLine.Length - 1);
-                }
-                newFile[i] = String.Join(";", columns);
-            }
-            UpdateColumnNames();
-            return newFile;
         }
 
-        public string[] AddNewColumnToTable(string[] csv, string type)
+        public void AddNewColumn()
         {
             if (IfColumnExist(NewColumnName))
             {
                 System.Windows.MessageBox.Show($"Колонка с названием {NewColumnName} уже существует");
-                return csv;
+                return;
             }
             Column newColumn = new Column { Name = NewColumnName, Type = NewColumnType };
             scheme.Columns.Add(newColumn);
             ColumnNames.Add(NewColumnName);
-            string[] newFile = new string[csv.Length];
-            string addValue = "";
-            if (type == "string") 
-            { 
-                addValue = ""; 
-            }
-            else if (type == "datetime") 
-            { 
-                addValue = $"{DateTime.MinValue}"; 
-            }
-            else 
-            { 
-                addValue = "0";
-            }
-            for (int i = 0; i < csv.Length; i++)
+            object addValue = GetDefaultValue(newColumn);
+            for (int i = 0; i < table.Rows.Count; i++)
             {
-                newFile[i] = csv[i] += $";{addValue}";
                 table.Rows[i].Data[newColumn] = addValue;
             }
             UpdateColumnNames();
-            return newFile;
         }
+
+        public object GetDefaultValue(Column column)
+        {
+            if (column.Type == "string")
+            {
+                return "";
+            }
+            else if (column.Type == "datetime")
+            {
+                return DateTime.MinValue;
+            }
+            else
+            {
+                return 0;
+            }
+        }
+
         public void DisplayTable()
         {
-            DataTable.Clear();
             DataTable dataTable = new DataTable();
             dataTable.TableName = TableName;
             foreach(Column column in scheme.Columns)
@@ -230,6 +209,7 @@ namespace DummyDB.ViewModel
             }
             DataTable = dataTable;
         }
+
         public void UpdateColumnNames()
         {
             List<string> newColumnNames = new List<string>();
@@ -239,17 +219,19 @@ namespace DummyDB.ViewModel
             }
             ColumnNames = newColumnNames;
         }
+
         public ICommand AddRow => new CommandDelegate(param =>
         {
             DataTable.Rows.Add(DataTable.NewRow());
         });
+
         public ICommand LoadDataTable => new CommandDelegate(param =>
         {
             if(!LoadChanges())
             {
                 return;
             }
-            SaveChangesToFile();
+            SaveChangesToCsv();
             DisplayTable();
         });
 
@@ -267,12 +249,7 @@ namespace DummyDB.ViewModel
                 return;
             }
             DataRow selectedRow = DataTable.Rows[index];
-            string row = "| ";
-            for(int i = 0; i < scheme.Columns.Count; i++)
-            {
-                row = row + $"{selectedRow[scheme.Columns[i].Name]} | ";
-            }
-            DialogResult dialogResult = System.Windows.Forms.MessageBox.Show($"Вы уверены что хотите удалить строку\n{row}?", "Подтверждение", MessageBoxButtons.YesNo);
+            DialogResult dialogResult = MessageBox.Show("Вы хорошо подумали?", "Подтверждение", MessageBoxButtons.YesNo);
             if (dialogResult == DialogResult.No)
             {
                 return;
@@ -282,7 +259,7 @@ namespace DummyDB.ViewModel
             LoadChanges();
         });
 
-        public void SaveChangesToFile()
+        public void SaveChangesToCsv()
         {
             StringBuilder newFile = new StringBuilder();
             foreach(Row row in table.Rows)
@@ -300,98 +277,102 @@ namespace DummyDB.ViewModel
 
         public bool LoadChanges()
         {
-            int countOfRows = DataTable.Rows.Count;
-            if (table.Rows.Count < DataTable.Rows.Count)
-            {
-                countOfRows = table.Rows.Count;
-            }
-            for (int i = 0; i < countOfRows; i++)
+            for (int i = 0; i < DataTable.Rows.Count; i++)
             {
                 for (int j = 0; j < scheme.Columns.Count; j++)
                 {
-                    if (DataTable.Rows[i][scheme.Columns[j].Name].ToString() == table.Rows[i].Data[scheme.Columns[j]].ToString())
-                    {
-                        continue;
+                    object data = CheckData(DataTable.Rows[i], scheme.Columns[j]);
+                    if (data == null) 
+                    { 
+                        return false;
                     }
-                    object data = CheckData(i, j);
-                    if (data == null) { continue; }
-                    table.Rows[i].Data[scheme.Columns[j]] = CheckData(i, j);
-                }
-            }
-            if (countOfRows < DataTable.Rows.Count)
-            {
-                for (int i = table.Rows.Count; i < DataTable.Rows.Count; i++)
-                {
-                    Row newRow = new Row();
-                    for (int j = 0; j < scheme.Columns.Count; j++)
+                    if (i >= table.Rows.Count)
                     {
-                        object data = CheckData(i, j);
-                        if (data == null) { return false; }
-                        newRow.Data.Add(scheme.Columns[j], data);
+                        table.Rows.Add(new Row() { Data = new Dictionary<Column, object>() });
                     }
-                    table.Rows.Add(newRow);
+                    table.Rows[i].Data[scheme.Columns[j]] = data;
                 }
             }
             return true;
         }
 
-        public object CheckData(int i, int j)
+        public object CheckData(DataRow row, Column column)
         {
-            string value = DataTable.Rows[i][scheme.Columns[j].Name].ToString();
-            switch (scheme.Columns[j].Type)
+            string value = row[column.Name].ToString();
+            switch (column.Type)
             {
                 case ("int"):
                     {
-                        if (int.TryParse(value, out int data))
-                        {
-                            return data;
-                        }
-                        else
-                        {
-                            MessageBox.Show($"В сроке {i + 1} в столбце {scheme.Columns[j].Name} указаны некорректные данные");
-                            return null;
-                        }
+                        return IntCase(value, row, column);
                     }
                 case ("uint"):
                     {
-                        if (uint.TryParse(value, out uint data))
-                        {
-                            return data;
-                        }
-                        else
-                        {
-                            MessageBox.Show($"В сроке {i + 1} в столбце {scheme.Columns[j].Name} указаны некорректные данные");
-                            return null;
-                        }
+                        return UintCase(value, row, column);
                     }
                 case ("datetime"):
                     {
-                        if (DateTime.TryParse(value, out DateTime data))
-                        {
-                            return data;
-                        }
-                        else
-                        {
-                            MessageBox.Show($"В сроке {i + 1} в столбце {scheme.Columns[j].Name} указаны некорректные данные");
-                            return null;
-                        }
+                        return DateTimeCase(value, row, column);
                     }
                 case ("double"):
                     {
-                        if (double.TryParse(value, out double data))
-                        {
-                            return data;
-                        }
-                        else
-                        {
-                            MessageBox.Show($"В сроке {i + 1} в столбце {scheme.Columns[j].Name} указаны некорректные данные");
-                            return null;
-                        }
+                        return DoubleCase(value, row, column);
                     }
                 default:
                     break;
             }
             return value;
+        }
+
+        public int? IntCase(string value, DataRow row, Column column)
+        {
+            if (int.TryParse(value, out int data))
+            {
+                return data;
+            }
+            else
+            {
+                MessageBox.Show($"В сроке {DataTable.Rows.IndexOf(row) + 1} в столбце {column.Name} указаны некорректные данные");
+                return null;
+            }
+        }
+
+        public uint? UintCase(string value, DataRow row, Column column)
+        {
+            if (uint.TryParse(value, out uint data))
+            {
+                return data;
+            }
+            else
+            {
+                MessageBox.Show($"В сроке {DataTable.Rows.IndexOf(row) + 1} в столбце {column.Name} -- {column.Type} указаны некорректные данные");
+                return null;
+            }
+        }
+
+        public DateTime? DateTimeCase(string value, DataRow row, Column column)
+        {
+            if (DateTime.TryParse(value, out DateTime data))
+            {
+                return data;
+            }
+            else
+            {
+                MessageBox.Show($"В сроке {DataTable.Rows.IndexOf(row) + 1}  в столбце  {column.Name} указаны некорректные данные");
+                return null;
+            }
+        }
+
+        public double? DoubleCase(string value, DataRow row, Column column)
+        {
+            if (double.TryParse(value, out double data))
+            {
+                return data;
+            }
+            else
+            {
+                MessageBox.Show($"В сроке {DataTable.Rows.IndexOf(row) + 1}  в столбце  {column.Name} указаны некорректные данные");
+                return null;
+            }
         }
     }
 }
