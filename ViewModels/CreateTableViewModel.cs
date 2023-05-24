@@ -102,23 +102,27 @@ namespace DummyDB.ViewModel
             string newFile = "";
             foreach(Column column in scheme.Columns)
             {
-                string addValue = "";
-                if (column.Type == "string")
-                {
-                    addValue = "";
-                }
-                else if (column.Type == "datetime")
-                {
-                    addValue = $"{DateTime.MinValue}";
-                }
-                else
-                {
-                    addValue = "0";
-                }
+                string addValue = GetDefaultValue(column).ToString();
                 newFile = newFile + $"{addValue};";
             }
             newFile = newFile.Substring(0, newFile.Length - 1);
             File.WriteAllText($"{FolderPath}\\{TableName}.csv", newFile);
+        }
+
+        public object GetDefaultValue(Column column)
+        {
+            if (column.Type == "string")
+            {
+                return "";
+            }
+            else if (column.Type == "datetime")
+            {
+                return DateTime.MinValue;
+            }
+            else
+            {
+                return 0;
+            }
         }
 
         public void UpdateColumns()

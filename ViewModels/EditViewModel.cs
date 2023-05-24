@@ -331,7 +331,7 @@ namespace DummyDB.ViewModel
             }
             else
             {
-                MessageBox.Show($"В сроке {DataTable.Rows.IndexOf(row) + 1} в столбце {column.Name} указаны некорректные данные");
+                MessageBox.Show($"В сроке {DataTable.Rows.IndexOf(row) + 1} в столбце {column.Name} ({column.Type}) указаны некорректные данные");
                 return null;
             }
         }
@@ -344,7 +344,7 @@ namespace DummyDB.ViewModel
             }
             else
             {
-                MessageBox.Show($"В сроке {DataTable.Rows.IndexOf(row) + 1} в столбце {column.Name} -- {column.Type} указаны некорректные данные");
+                MessageBox.Show($"В сроке {DataTable.Rows.IndexOf(row) + 1} в столбце {column.Name} ({column.Type}) указаны некорректные данные");
                 return null;
             }
         }
@@ -357,7 +357,7 @@ namespace DummyDB.ViewModel
             }
             else
             {
-                MessageBox.Show($"В сроке {DataTable.Rows.IndexOf(row) + 1}  в столбце  {column.Name} указаны некорректные данные");
+                MessageBox.Show($"В сроке {DataTable.Rows.IndexOf(row) + 1}  в столбце  {column.Name} ({column.Type}) указаны некорректные данные");
                 return null;
             }
         }
@@ -370,7 +370,7 @@ namespace DummyDB.ViewModel
             }
             else
             {
-                MessageBox.Show($"В сроке {DataTable.Rows.IndexOf(row) + 1}  в столбце  {column.Name} указаны некорректные данные");
+                MessageBox.Show($"В сроке {DataTable.Rows.IndexOf(row) + 1}  в столбце  {column.Name} ({column.Type}) указаны некорректные данные");
                 return null;
             }
         }
