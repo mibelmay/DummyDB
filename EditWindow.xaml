@@ -1,0 +1,56 @@
+﻿<Window x:Class="DummyDB.EditWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:sys="clr-namespace:System;assembly=mscorlib"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:DummyDB"
+        xmlns:vm="clr-namespace:DummyDB.ViewModel"
+        mc:Ignorable="d"
+        Title="Редактирование таблицы" Height="600" Width="800">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="20"/>
+            <RowDefinition Height="5"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="200"/>
+            <RowDefinition Height="30"/>
+            <RowDefinition Height="5"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="5"/>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="5"/>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="5"/>
+        </Grid.ColumnDefinitions>
+        <TextBlock Text="Таблица" Grid.Column="1" Grid.Row="0" FontSize="15" Background="LightGray" Grid.ColumnSpan="3"/>
+        <DataGrid x:Name="dataGrid" ItemsSource="{Binding DataTable}" AutoGenerateColumns="True" Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="3" CanUserAddRows="False" AlternatingRowBackground="LavenderBlush"/>
+
+        <TextBlock Text="Редактирование схемы" Grid.Row="3" Grid.Column="1" FontSize="15" Background="LightGray" Height="20" VerticalAlignment="Top"/>
+        <TextBlock Text="Изменить имя таблицы:" Grid.Column="1" Grid.Row="3" HorizontalAlignment="Left" Height="19" VerticalAlignment="Top" Margin="23,25,0,0"/>
+        <TextBox Text="{Binding TableName}" Grid.Column="1" Grid.Row="3" Margin="196,24,6,0" Height="20" VerticalAlignment="Top"/>
+        <TextBlock Text="Переименовать столбец:" Grid.Column="1" Grid.Row="3" HorizontalAlignment="Left" Height="18" VerticalAlignment="Top" Margin="23,49,0,0"/>
+        <ComboBox ItemsSource="{Binding ColumnNames}" SelectedItem="{Binding SelectedColumn}" Grid.Column="1" Grid.Row="3" Height="18" VerticalAlignment="Top" Margin="5,72,202,0"/>
+        <TextBox Text ="{Binding ColumnName}" Grid.Row="3" Grid.Column="1" Height="18" VerticalAlignment="Top" Margin="196,72,6,0" />
+        <TextBlock Text ="Добавить столбец:" Grid.Row="3" Grid.Column="1" Margin="23,95,0,0" HorizontalAlignment="Left" VerticalAlignment="Top" />
+        <ComboBox SelectedItem="{Binding NewColumnType}" Grid.Row="3" Grid.Column="1" Height="18" VerticalAlignment="Top" Margin="5,120,202,0">
+            <sys:String>int</sys:String>
+            <sys:String>uint</sys:String>
+            <sys:String>double</sys:String>
+            <sys:String>string</sys:String>
+            <sys:String>datetime</sys:String>
+        </ComboBox>
+        <TextBox Text="{Binding NewColumnName}" Grid.Row="3" Grid.Column="1" Height="18" VerticalAlignment="Top" Margin="196,120,6,0"/>
+        <TextBlock Text="Удалить столбец:" Grid.Column="1" Grid.Row="3" Margin="49,158,248,0" Height="19" VerticalAlignment="Top"/>
+        <ComboBox SelectedItem="{Binding DeletedColumn}" ItemsSource="{Binding ColumnNames}" Grid.Column="1" Grid.Row="3" Margin="196,158,0,0" Height="18" VerticalAlignment="Top" HorizontalAlignment="Left" Width="187"/>
+        <Button Command="{Binding SaveScheme}" Content="Сохранить схему" Grid.Column="1" Grid.Row="4" Background="LightGray"/>
+
+        <TextBlock Text="Редактирование данных" Grid.Row="3" Grid.Column="3" FontSize="15" Height="20" VerticalAlignment="Top" Background="LightGray"/>
+        <Button Content="Добавить строку" Command="{Binding AddRow}" Grid.Column="3" Grid.Row="3" Height="30" Margin="0,30,0,0" VerticalAlignment="Top" Background="LightGray"/>
+        <Button Content="Удалить строку" Command="{Binding DeleteRow}" Grid.Column="3" Grid.Row="3" Height="30" Margin="0,66,0,0" VerticalAlignment="Top" Background="LightGray"/>
+        <Button Command="{Binding LoadDataTable}" Content ="Сохранить данные" Grid.Column="3" Grid.Row="4" Background="LightGray"/>
+
+    </Grid>
+</Window>

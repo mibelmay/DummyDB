@@ -1,48 +1,56 @@
-﻿<Window x:Class="DummyDB_5.MainWindow"
+﻿<Window x:Class="DummyDB.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:DummyDB_5"
-        xmlns:vm="clr-namespace:DummyDB_5.ViewModel"
+        xmlns:local="clr-namespace:DummyDB"
+        xmlns:vm="clr-namespace:DummyDB.ViewModel"
         mc:Ignorable="d"
-        Title="Database Explorer" Height="450" Width="800">
+        ResizeMode="NoResize"
+        Title="Database Explorer" Height="500" Width="800">
+
     <Window.DataContext>
         <vm:MainViewModel/>
     </Window.DataContext>
-    
+
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="27*"/>
+            <RowDefinition Height="20*"/>
             <RowDefinition Height="24*"/>
             <RowDefinition Height="6*"/>
-            <RowDefinition Height="358*"/>
-            <RowDefinition Height="18.723"/>
+            <RowDefinition Height="87*"/>
+            <RowDefinition Height="271"/>
+            <RowDefinition Height="18*"/>
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="9*" />
-            <ColumnDefinition Width="190*" />
+            <ColumnDefinition Width="100*" />
             <ColumnDefinition Width="5*" />
             <ColumnDefinition Width="190*" />
             <ColumnDefinition Width="9*" />
         </Grid.ColumnDefinitions>
-        <Menu Grid.ColumnSpan="5" Margin="0,3,0,2">
+        <Menu Grid.ColumnSpan="5" Grid.Row="0" Margin="0,3,0,2" Background="LavenderBlush">
             <MenuItem Command="{Binding OpenSourceClick}" Header="Open Source" FontSize="15" Width="98">
             </MenuItem>
         </Menu>
-        <TextBox  Grid.Column="1" Grid.Row ="1" Text="Source" Margin="0,10,0,0" Grid.RowSpan="2">
+        <TextBox  Grid.Column="1" Grid.Row ="1" Text="Source" >
             <TextBox.Background>
-                <SolidColorBrush Color="Lavender"/>
+                <SolidColorBrush Color="LightGray"/>
             </TextBox.Background>
         </TextBox>
-        <TextBlock Grid.Column="3" Grid.Row ="1" Text="Table" Margin="0,10,0,0" Grid.RowSpan="2">
-            <TextBlock.Background>
-                <SolidColorBrush Color="Lavender"/>
-            </TextBlock.Background>
-        </TextBlock>
-        <TreeView Grid.Column="1" Grid.Row="3">
+        <TextBox  Grid.Column="3" Grid.Row ="1" Text="Table">
+            <TextBox.Background>
+                <SolidColorBrush Color="LightGray"/>
+            </TextBox.Background>
+        </TextBox>
+        <TreeView Grid.Column="1" Grid.Row="3" Grid.RowSpan="2" Margin="0,0,0,73">
             <TreeViewItem x:Name="dataTree" IsExpanded="True" x:FieldModifier="public"/>
         </TreeView>
-        <DataGrid Grid.Column="3" Grid.Row="3" Name="DataTable" AutoGenerateColumns="False"/>
+        <TextBlock Text="{Binding Message}" Foreground="Red"  x:Name="TextShow" Grid.Column="1" Grid.Row="5" Grid.ColumnSpan="3"/>
+        <DataGrid Name="dataGrid" ItemsSource="{Binding DataTable}" Grid.Column="3" Grid.Row="3"  AutoGenerateColumns="True" Margin="0,0,0,73" Grid.RowSpan="2" CanUserAddRows="False" AlternatingRowBackground="LavenderBlush"/>
+        <Button Command="{Binding CreateDB_Click}" Content="Создать БД" Grid.Column="3" Grid.Row="4" HorizontalAlignment="Left" Width="160" Height="40" VerticalAlignment="Bottom" Background="LightGray"/>
+        <Button Command="{Binding CreateTable_Click}" Content="Создать таблицу" Grid.Column="3" Grid.Row="4" Width="160" Height="40" HorizontalAlignment="Center" VerticalAlignment="Bottom" Background="LightGray"/>
+        <Button Command="{Binding Edit_Click}" Content="Редактировать таблицу" Grid.Column="3" Grid.Row="4" Width="160" Height="40" VerticalAlignment="Bottom" HorizontalAlignment="Right" Background="LightGray"/>
+        <Button Command="{Binding Update_Click}" Content="Обновить" Grid.Column="1" Grid.Row="4" Height="40" VerticalAlignment="Top" Margin="0,231,0,0" Background="LightGray"/>
     </Grid>
 </Window>

@@ -9,4 +9,8 @@
     <UseWindowsForms>True</UseWindowsForms>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\DummyDB.Core\DummyDB.Core.csproj" />
+  </ItemGroup>
+
 </Project>
