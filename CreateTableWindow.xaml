@@ -38,7 +38,7 @@
                 <sys:String>int</sys:String>
                 <sys:String>double</sys:String>
             </ComboBox>
-            <Button Content="Добавить столбец" Command="{Binding AddColumn}" Margin="0,5,0,5" Background="MistyRose"/>
+            <Button Content="Добавить столбец" Command="{Binding AddColumn}" Margin="0,5,0,5" Background="LightGray"/>
         </StackPanel>
         <ScrollViewer
              Grid.Row="3"
@@ -62,7 +62,7 @@
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
         </ScrollViewer>
-        <Button Content="Создать таблицу" Command="{Binding CreateTable}" Grid.Row="4" Background="MistyRose"/>
+        <Button Content="Создать таблицу" Command="{Binding CreateTable}" Grid.Row="4" Background="LightGray"/>
 
     </Grid>
 </Window>

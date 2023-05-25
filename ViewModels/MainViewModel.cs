@@ -106,9 +106,10 @@ namespace DummyDB.ViewModel
                 string[] line = file.Split("\\");
                 treeItem.Header = (line[line.Length - 1]).Substring(0, line[line.Length - 1].Length - 4);
                 treeItem.Selected += TableTreeSelected;
-                foreach (Column column in scheme.Columns)
+                for (int i = 0; i < scheme.Columns.Count; i++)
                 {
-                    treeItem.Items.Add(column.Name + " - " + column.Type);
+                    treeItem.Items.Add(new TreeViewItem {Header = scheme.Columns[i].Name + " - " + scheme.Columns[i].Type, });
+                    ((TreeViewItem)treeItem.Items[i]).Selected += ColumnTreeSelected;
                 }
                 ((MainWindow)System.Windows.Application.Current.MainWindow).dataTree.Items.Add(treeItem);
                 schemes.Remove(scheme);
@@ -116,7 +117,11 @@ namespace DummyDB.ViewModel
             }
             return table;
         }
+        private void ColumnTreeSelected(object sender, RoutedEventArgs e)
+        {
+            System.Windows.MessageBox.Show($"{((TreeViewItem)sender).Header.ToString()} вот такой узелок вы выбрали");
 
+        }
         private void TableTreeSelected(object sender, RoutedEventArgs e)
         {
             DataTable dataTable = new DataTable();

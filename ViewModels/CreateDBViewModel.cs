@@ -55,21 +55,35 @@ namespace DummyDB.ViewModel
         {
             if (Name == "" || Name == null || Path == "" || Path == null)
             {
-                System.Windows.MessageBox.Show("Заполните поля");
+                MessageBox.Show("Заполните поля");
                 return;
             }
             string name = Name;
             string path = Path + "\\" + Name;
-            Path = path;
             if (Directory.Exists(path))
             {
-                System.Windows.MessageBox.Show("Такая папка уже существует");
+                MessageBox.Show("Такая папка уже существует");
                 Path = "";
                 return;
             }
-            Directory.CreateDirectory(path);
-            System.Windows.MessageBox.Show($"Папка {Name} создана по пути {Path}");
-            Window.Close();
+            CreateFolder(path);
+            //Directory.CreateDirectory(path);
+            //System.Windows.MessageBox.Show($"Папка {Name} создана по пути {Path}");
+            //Window.Close();
         });
+        private void CreateFolder(string path)
+        {
+            try
+            {
+                Directory.CreateDirectory(path);
+                MessageBox.Show($"Папка {Name} создана по пути {Path}");
+                Window.Close();
+            }
+            catch
+            {
+                MessageBox.Show("Возможно вы ввели символы, которые нельзя использовать в названии папки");
+                return;
+            }
+        }
     }
 }

@@ -25,9 +25,9 @@
         <TextBlock Grid.Row="0" TextAlignment="Center" Background="LightGray">Ваше название</TextBlock>
         <TextBox x:Name="DB_name" Text="{Binding Name}" Grid.Row="1" Margin="80,5,80,5"/>
         <TextBlock Text="Выберите место хранения БД" Grid.Row="2" TextAlignment="Center" Background="LightGray"/>
-        <Button Command="{Binding Choose_Place}" Grid.Row="3" Content="Выбрать место" Margin="80,5,80,5" Background="MistyRose"/>
+        <Button Command="{Binding Choose_Place}" Grid.Row="3" Content="Выбрать место" Margin="80,5,80,5" Background="LightGray"/>
         <TextBlock Text="{Binding Path}" HorizontalAlignment="Center"  Grid.Row="4" Margin="0,0,10,0"/>
-        <Button IsDefault="True" Command="{Binding CreateDB_Click}" Grid.Row="5" Content="OK" Background="MistyRose"/>
+        <Button IsDefault="True" Command="{Binding CreateDB_Click}" Grid.Row="5" Content="OK" Background="LightGray"/>
         
     </Grid>
 </Window>

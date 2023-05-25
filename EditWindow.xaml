@@ -45,12 +45,12 @@
         <TextBox Text="{Binding NewColumnName}" Grid.Row="3" Grid.Column="1" Height="18" VerticalAlignment="Top" Margin="196,120,6,0"/>
         <TextBlock Text="Удалить столбец:" Grid.Column="1" Grid.Row="3" Margin="49,158,248,0" Height="19" VerticalAlignment="Top"/>
         <ComboBox SelectedItem="{Binding DeletedColumn}" ItemsSource="{Binding ColumnNames}" Grid.Column="1" Grid.Row="3" Margin="196,158,0,0" Height="18" VerticalAlignment="Top" HorizontalAlignment="Left" Width="187"/>
-        <Button Command="{Binding SaveScheme}" Content="Сохранить схему" Grid.Column="1" Grid.Row="4" Background="MistyRose"/>
+        <Button Command="{Binding SaveScheme}" Content="Сохранить схему" Grid.Column="1" Grid.Row="4" Background="LightGray"/>
 
         <TextBlock Text="Редактирование данных" Grid.Row="3" Grid.Column="3" FontSize="15" Height="20" VerticalAlignment="Top" Background="LightGray"/>
-        <Button Content="Добавить строку" Command="{Binding AddRow}" Grid.Column="3" Grid.Row="3" Height="30" Margin="0,30,0,0" VerticalAlignment="Top" Background="MistyRose"/>
-        <Button Content="Удалить строку" Command="{Binding DeleteRow}" Grid.Column="3" Grid.Row="3" Height="30" Margin="0,66,0,0" VerticalAlignment="Top" Background="MistyRose"/>
-        <Button Command="{Binding LoadDataTable}" Content ="Сохранить данные" Grid.Column="3" Grid.Row="4" Background="MistyRose"/>
+        <Button Content="Добавить строку" Command="{Binding AddRow}" Grid.Column="3" Grid.Row="3" Height="30" Margin="0,30,0,0" VerticalAlignment="Top" Background="LightGray"/>
+        <Button Content="Удалить строку" Command="{Binding DeleteRow}" Grid.Column="3" Grid.Row="3" Height="30" Margin="0,66,0,0" VerticalAlignment="Top" Background="LightGray"/>
+        <Button Command="{Binding LoadDataTable}" Content ="Сохранить данные" Grid.Column="3" Grid.Row="4" Background="LightGray"/>
 
     </Grid>
 </Window>
