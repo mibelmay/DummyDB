@@ -120,7 +120,6 @@ namespace DummyDB.ViewModel
         private void ColumnTreeSelected(object sender, RoutedEventArgs e)
         {
             System.Windows.MessageBox.Show($"{((TreeViewItem)sender).Header.ToString()} вот такой узелок вы выбрали");
-
         }
         private void TableTreeSelected(object sender, RoutedEventArgs e)
         {
@@ -203,15 +202,21 @@ namespace DummyDB.ViewModel
                     break;
                 }
             }
-            vmEdit.ColumnNames = new List<string>();
-            foreach (Column column in vmEdit.scheme.Columns)
-            {
-                vmEdit.ColumnNames.Add(column.Name);
-            }
+            vmEdit.ColumnNames = CreateColumnNamesList(vmEdit.scheme);
             vmEdit.oldFileName = SelectedTable.TableName;
             vmEdit.folderPath = folderPath;
             newWindow.Owner = ((MainWindow)System.Windows.Application.Current.MainWindow);
             newWindow.ShowDialog();
         });
+
+        private List<string> CreateColumnNamesList(TableScheme scheme)
+        {
+            List<string> columns = new List<string>();
+            foreach (Column column in scheme.Columns)
+            {
+                columns.Add(column.Name);
+            }
+            return columns;
+        }
     }
 }

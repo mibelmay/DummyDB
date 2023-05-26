@@ -100,8 +100,8 @@ namespace DummyDB.ViewModel
             string json = JsonSerializer.Serialize(scheme);
             File.WriteAllText($"{folderPath}\\{scheme.Name}.json", json);
             SaveChangesToCsv();
-            ColumnName = DeletedColumn = NewColumnName = "";
-            SelectedColumn = NewColumnType = null;
+            ColumnName = NewColumnName = "";
+            SelectedColumn = NewColumnType = DeletedColumn = null;
             DisplayTable();
         });
 
@@ -154,6 +154,7 @@ namespace DummyDB.ViewModel
                     break;
                 }
             }
+            UpdateColumnNames();
         }
 
         public void AddNewColumn()

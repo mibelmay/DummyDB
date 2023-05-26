@@ -63,13 +63,9 @@ namespace DummyDB.ViewModel
             if (Directory.Exists(path))
             {
                 MessageBox.Show("Такая папка уже существует");
-                Path = "";
                 return;
             }
             CreateFolder(path);
-            //Directory.CreateDirectory(path);
-            //System.Windows.MessageBox.Show($"Папка {Name} создана по пути {Path}");
-            //Window.Close();
         });
         private void CreateFolder(string path)
         {
