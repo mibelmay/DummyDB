@@ -44,8 +44,15 @@ namespace DummyDB.ViewModel
         private List<Column> _columns = new List<Column>();
         public List<Column> Columns
         {
-            get { return _columns; }
-            set { _columns = value; OnPropertyChanged();}
+            get 
+            { 
+                return _columns; 
+            }
+            set
+            {
+                _columns = value; 
+                OnPropertyChanged();
+            }
         }
         public string FolderPath { get; set; }
         public CreateTableWindow Window { get; set; }
@@ -56,46 +63,55 @@ namespace DummyDB.ViewModel
             {
                 return;
             }
-            foreach (Column column in Columns)
+            if(IfColumnExist(ColumnName))
             {
-                if(column.Name == ColumnName)
-                {
-                    MessageBox.Show($"Столбец с именем {ColumnName} уже добавлен в таблицу");
-                    return;
-                }
+                MessageBox.Show($"Столбец с именем {ColumnName} уже добавлен в таблицу");
+                return;
             }
-            _columns.Add(new Column { Name = $"{ColumnName}", Type = $"{Type}"});
+            _columns.Add(
+                new Column 
+                { 
+                    Name = $"{ColumnName}", 
+                    Type = $"{Type}"
+                });
             UpdateColumns();
         });
 
         public ICommand CreateTable => new CommandDelegate(patameter =>
         {
-            if(FolderPath == "")
-            {
-                MessageBox.Show("Вернитесь на главное окно и выберите папку");
-                return;
-            }
             if (TableName == "" || TableName == null || _columns.Count == 0)
             {
                 MessageBox.Show("Заполните все поля");
                 return;
             }
-            List<Column> columnsOfNewTable = new List<Column>();
-            foreach (Column column in _columns)
-            {
-                columnsOfNewTable.Add(column);
-            }
             TableScheme scheme = new TableScheme()
             {
                 Name = TableName,
-                Columns = columnsOfNewTable
+                Columns = _columns
             };
-            string json = JsonSerializer.Serialize<TableScheme>(scheme);
-            File.WriteAllText($"{FolderPath}\\{TableName}.json", json);
+            CreateJson(scheme);
             CreateEmptyTable(scheme);
             MessageBox.Show($"Таблица создана по пути {FolderPath}");
             Window.Close();
         });
+
+        public bool IfColumnExist(string columnName)
+        {
+            foreach (Column column in Columns)
+            {
+                if (column.Name == columnName)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        public void CreateJson(TableScheme scheme)
+        {
+            string json = JsonSerializer.Serialize<TableScheme>(scheme);
+            File.WriteAllText($"{FolderPath}\\{TableName}.json", json);
+        }
 
         public void CreateEmptyTable(TableScheme scheme)
         {
@@ -119,10 +135,7 @@ namespace DummyDB.ViewModel
             {
                 return DateTime.MinValue;
             }
-            else
-            {
-                return 0;
-            }
+            return 0;
         }
 
         public void UpdateColumns()

@@ -34,7 +34,8 @@ namespace DummyDB.ViewModel
                 OnPropertyChanged();    
             }
         }
-        public DataTable SelectedTable { get; set; }
+        public DataTable SelectedDataTable { get; set; }
+        public TableScheme SelectedTable { get; set; }
         public string folderPath { get; set; }
 
         public ICommand OpenSourceClick => new CommandDelegate(parameter =>
@@ -44,10 +45,15 @@ namespace DummyDB.ViewModel
             FolderBrowserDialog openFolderDialog = new FolderBrowserDialog();
             folderPath = "";
             Message = "";
-            if (openFolderDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+            if (openFolderDialog.ShowDialog() == DialogResult.OK)
             {
                 folderPath = openFolderDialog.SelectedPath;
             }
+            DisplayDataBase();
+        });
+
+        public void DisplayDataBase()
+        {
             if (folderPath == "")
             {
                 Message = "Папка не выбрана";
@@ -57,7 +63,7 @@ namespace DummyDB.ViewModel
             string folderName = splits[splits.Length - 1];
             ((MainWindow)System.Windows.Application.Current.MainWindow).dataTree.Header = folderName;
             LoadTreeView();
-        });
+        }
 
         public void LoadTreeView()
         {
@@ -102,25 +108,32 @@ namespace DummyDB.ViewModel
                     continue;
                 }
                 schemeTablePairs.Add(scheme, table);
-                TreeViewItem treeItem = new TreeViewItem();
-                string[] line = file.Split("\\");
-                treeItem.Header = (line[line.Length - 1]).Substring(0, line[line.Length - 1].Length - 4);
-                treeItem.Selected += TableTreeSelected;
-                for (int i = 0; i < scheme.Columns.Count; i++)
-                {
-                    treeItem.Items.Add(new TreeViewItem {Header = scheme.Columns[i].Name + " - " + scheme.Columns[i].Type, });
-                    ((TreeViewItem)treeItem.Items[i]).Selected += ColumnTreeSelected;
-                }
-                ((MainWindow)System.Windows.Application.Current.MainWindow).dataTree.Items.Add(treeItem);
+                AddTreeItem(file, scheme);
                 schemes.Remove(scheme);
                 break;
             }
             return table;
         }
+
+        public void AddTreeItem(string file, TableScheme scheme)
+        {
+            TreeViewItem treeItem = new TreeViewItem();
+            string[] line = file.Split("\\");
+            treeItem.Header = (line[line.Length - 1]).Substring(0, line[line.Length - 1].Length - 4);
+            treeItem.Selected += TableTreeSelected;
+            for (int i = 0; i < scheme.Columns.Count; i++)
+            {
+                treeItem.Items.Add(new TreeViewItem { Header = scheme.Columns[i].Name + " - " + scheme.Columns[i].Type, });
+                ((TreeViewItem)treeItem.Items[i]).Selected += ColumnTreeSelected;
+            }
+            ((MainWindow)System.Windows.Application.Current.MainWindow).dataTree.Items.Add(treeItem);
+        }
+
         private void ColumnTreeSelected(object sender, RoutedEventArgs e)
         {
             System.Windows.MessageBox.Show($"{((TreeViewItem)sender).Header.ToString()} вот такой узелок вы выбрали");
         }
+
         private void TableTreeSelected(object sender, RoutedEventArgs e)
         {
             DataTable dataTable = new DataTable();
@@ -130,24 +143,35 @@ namespace DummyDB.ViewModel
                 if(pair.Key.Name == tableName)
                 {
                     dataTable.TableName = tableName;
-                    foreach(Column column in pair.Key.Columns)
-                    {
-                        dataTable.Columns.Add(column.Name);
-                    }
-                    for(int i = 0; i < pair.Value.Rows.Count; i++)
-                    {
-                        DataRow newRow = dataTable.NewRow();
-                        foreach (var rowPair in pair.Value.Rows[i].Data)
-                        {
-                            newRow[rowPair.Key.Name] = rowPair.Value;
-                        }
-                        dataTable.Rows.Add(newRow);
-                    }
+                    AddColumnsToDataTable(pair.Key.Columns, dataTable);
+                    AddRowsToDataTable(pair.Value.Rows, dataTable);
+                    SelectedTable = pair.Key;
                     break;
                 }
             }
             DataTable = dataTable;
-            SelectedTable = dataTable;
+            SelectedDataTable = dataTable;
+        }
+
+        private void AddColumnsToDataTable(List<Column> columns, DataTable dataTable)
+        {
+            foreach (Column column in columns)
+            {
+                dataTable.Columns.Add(column.Name);
+            }
+        }
+
+        private void AddRowsToDataTable(List<Row> rows, DataTable dataTable)
+        {
+            for (int i = 0; i < rows.Count; i++)
+            {
+                DataRow newRow = dataTable.NewRow();
+                foreach (var rowPair in rows[i].Data)
+                {
+                    newRow[rowPair.Key.Name] = rowPair.Value;
+                }
+                dataTable.Rows.Add(newRow);
+            }
         }
 
         public ICommand Update_Click => new CommandDelegate(parameter =>
@@ -158,13 +182,13 @@ namespace DummyDB.ViewModel
             }
             LoadTreeView();
         });
+
         public ICommand CreateDB_Click => new CommandDelegate(parameter =>
         {
             CreateDBWindow CreateDB = new CreateDBWindow();
             CreateDBViewModel vmCreate = new CreateDBViewModel();
             CreateDB.DataContext = vmCreate;
             vmCreate.Window = CreateDB;
-            CreateDB.Owner = ((MainWindow)System.Windows.Application.Current.MainWindow);
             CreateDB.ShowDialog();
         });
 
@@ -180,32 +204,23 @@ namespace DummyDB.ViewModel
             CreateTable.DataContext = vmCreate;
             vmCreate.FolderPath = folderPath;
             vmCreate.Window = CreateTable;
-            CreateTable.Owner = ((MainWindow)System.Windows.Application.Current.MainWindow);
             CreateTable.ShowDialog();
         });
 
         public ICommand Edit_Click => new CommandDelegate(parameter =>
         {
-            if (SelectedTable == null) return;
+            if (SelectedDataTable == null) return;
             EditWindow newWindow = new EditWindow();
             EditViewModel vmEdit = new EditViewModel();
             newWindow.DataContext = vmEdit;
             vmEdit.dataGrid = newWindow.dataGrid;
-            vmEdit.DataTable = SelectedTable;
-            vmEdit.TableName = SelectedTable.TableName;
-            foreach (var pair in schemeTablePairs)
-            {
-                if (pair.Key.Name == SelectedTable.TableName) 
-                { 
-                    vmEdit.scheme = pair.Key; 
-                    vmEdit.table = pair.Value; 
-                    break;
-                }
-            }
+            vmEdit.DataTable = SelectedDataTable;
+            vmEdit.TableName = SelectedDataTable.TableName;
+            vmEdit.scheme = SelectedTable;
+            vmEdit.table = schemeTablePairs[SelectedTable];
             vmEdit.ColumnNames = CreateColumnNamesList(vmEdit.scheme);
-            vmEdit.oldFileName = SelectedTable.TableName;
+            vmEdit.oldFileName = SelectedDataTable.TableName;
             vmEdit.folderPath = folderPath;
-            newWindow.Owner = ((MainWindow)System.Windows.Application.Current.MainWindow);
             newWindow.ShowDialog();
         });
 

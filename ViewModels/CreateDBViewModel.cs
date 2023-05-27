@@ -39,14 +39,9 @@ namespace DummyDB.ViewModel
             Path = "";
             FolderBrowserDialog openFolderDialog = new FolderBrowserDialog();
             string path = "";
-
-            if (openFolderDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+            if (openFolderDialog.ShowDialog() == DialogResult.OK)
             {
                 path = openFolderDialog.SelectedPath;
-            }
-            if (path == "")
-            {
-                return;
             }
             Path = path;
         });
@@ -58,7 +53,6 @@ namespace DummyDB.ViewModel
                 MessageBox.Show("Заполните поля");
                 return;
             }
-            string name = Name;
             string path = Path + "\\" + Name;
             if (Directory.Exists(path))
             {
@@ -67,6 +61,7 @@ namespace DummyDB.ViewModel
             }
             CreateFolder(path);
         });
+
         private void CreateFolder(string path)
         {
             try
