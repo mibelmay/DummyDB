@@ -7,6 +7,7 @@ using System.Windows;
 using System.Windows.Input;
 using System.Windows.Controls;
 using System.Data;
+using System.Linq;
 
 namespace DummyDB.ViewModel
 {
@@ -71,14 +72,15 @@ namespace DummyDB.ViewModel
             List<TableScheme> schemes = LoadSchemes();
             foreach (string file in Directory.EnumerateFiles(folderPath))
             {
-                if (file.Contains(".csv"))
+                if (!file.Contains(".csv"))
                 {
-                    Table table = LoadTable(schemes, file);
-                    if (table == null)
-                    {
-                        string[] line = file.Split("\\");
-                        Message = $"Не найдена схема для таблицы {line[line.Length - 1].Replace(".csv", "")}";
-                    }
+                    continue;   
+                }
+                Table table = LoadTable(schemes, file);
+                if (table == null)
+                {
+                    string[] line = file.Split("\\");
+                    Message = $"Не найдена схема для таблицы {line[line.Length - 1].Replace(".csv", "")}";
                 }
             }
         }
@@ -204,6 +206,8 @@ namespace DummyDB.ViewModel
             CreateTable.DataContext = vmCreate;
             vmCreate.FolderPath = folderPath;
             vmCreate.Window = CreateTable;
+            vmCreate.Tables = schemeTablePairs.Values.ToList();
+            vmCreate.TableNames = schemeTablePairs.Select(pair => pair.Key.Name).ToList();
             CreateTable.ShowDialog();
         });
 

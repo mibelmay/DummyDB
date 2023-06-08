@@ -5,6 +5,7 @@ using System.Text.Json;
 using System.Windows.Input;
 using System.Windows;
 using System.IO;
+using System.Linq;
 
 namespace DummyDB.ViewModel
 {
@@ -56,7 +57,39 @@ namespace DummyDB.ViewModel
         }
         public string FolderPath { get; set; }
         public CreateTableWindow Window { get; set; }
-        
+        private bool _isPrimaryKey;
+        public bool IsPrimaryKey
+        {
+            get { return _isPrimaryKey; }
+            set { _isPrimaryKey = value; OnPropertyChanged(); }
+        }
+        public List<Table> Tables { get; set; }
+        private string _referencedTable;
+        public string ReferencedTable
+        {
+            get { return _referencedTable; }
+            set { _referencedTable = value; LoadColumnNames(_referencedTable); OnPropertyChanged(); }
+        }
+        private List<string> _tableNames;
+        public List<string> TableNames
+        {
+            get { return _tableNames; }
+            set { _tableNames = value; OnPropertyChanged(); }
+        }
+        private List<string> _columnNames;
+        public List<string> ColumnNames
+        {
+            get { return _columnNames; }
+            set { _columnNames = value; OnPropertyChanged(); }
+        }
+        private string _referencedColumn;
+        public string ReferencedColumn
+        {
+            get { return _referencedColumn; }
+            set { _referencedColumn = value; OnPropertyChanged(); }
+        }
+
+
         public ICommand AddColumn => new CommandDelegate(patameter =>
         {
             if (ColumnName == "" || Type == null)
@@ -68,11 +101,15 @@ namespace DummyDB.ViewModel
                 MessageBox.Show($"Столбец с именем {ColumnName} уже добавлен в таблицу");
                 return;
             }
+            CheckForeignKey();
             _columns.Add(
-                new Column 
-                { 
-                    Name = $"{ColumnName}", 
-                    Type = $"{Type}"
+                new Column
+                {
+                    Name = $"{ColumnName}",
+                    Type = $"{Type}",
+                    IsPrimary = IsPrimaryKey,
+                    ReferencedTable = ReferencedTable,
+                    ReferencedColumn = ReferencedColumn
                 });
             UpdateColumns();
         });
@@ -94,6 +131,16 @@ namespace DummyDB.ViewModel
             MessageBox.Show($"Таблица создана по пути {FolderPath}");
             Window.Close();
         });
+
+        public void CheckForeignKey()
+        {
+            if (IsPrimaryKey && (ReferencedTable == null || ReferencedColumn == null))
+            {
+                ReferencedTable = null;
+                ReferencedColumn = null;
+                return;
+            }
+        }
 
         public bool IfColumnExist(string columnName)
         {
@@ -146,6 +193,19 @@ namespace DummyDB.ViewModel
                 newColumns.Add(column);
             }
             Columns = newColumns;
+        }
+
+        public void LoadColumnNames(string tableName)
+        {
+            List<string> names = new List<string>();
+            foreach (Table table in Tables)
+            {
+                if (table.Scheme.Name == tableName)
+                {
+                    names = table.Scheme.Columns.Select(el => el.Name).ToList();
+                }
+            }
+            ColumnNames = names;
         }
     }
 }
