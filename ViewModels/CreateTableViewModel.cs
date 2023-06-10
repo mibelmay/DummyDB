@@ -42,7 +42,7 @@ namespace DummyDB.ViewModel
                 OnPropertyChanged();
             }
         }
-        private List<Column> _columns = new List<Column>();
+        private List<Column> _columns;
         public List<Column> Columns
         {
             get 
@@ -103,7 +103,6 @@ namespace DummyDB.ViewModel
             }
             if(!CheckForeignKey())
             {
-                MessageBox.Show($"Столбец с Primaty key должен быть типа uint");
                 return;
             }
             _columns.Add(
@@ -117,6 +116,7 @@ namespace DummyDB.ViewModel
                 });
             UpdateColumns();
         });
+
 
         public ICommand CreateTable => new CommandDelegate(patameter =>
         {
@@ -142,12 +142,14 @@ namespace DummyDB.ViewModel
             {
                 ReferencedTable = null;
                 ReferencedColumn = null;
+                IsPrimaryKey = false;
                 return true;
             }
             if(Type == "uint")
             {
                 return true;
             }
+            MessageBox.Show($"Столбец с Primaty key должен быть типа uint");
             return false;
         }
 

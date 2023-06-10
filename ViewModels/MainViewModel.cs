@@ -8,6 +8,7 @@ using System.Windows.Input;
 using System.Windows.Controls;
 using System.Data;
 using System.Linq;
+using System.Data.Common;
 
 namespace DummyDB.ViewModel
 {
@@ -66,6 +67,29 @@ namespace DummyDB.ViewModel
             set
             {
                 _selectedColumn = value;
+                Table table = schemeTablePairs[SelectedTable];
+                Column column = table.Scheme.Columns.Find(col => col.Name == SelectedColumn);
+                CreateRowsList(table, column);
+                OnPropertyChanged();
+            }
+        }
+        private List<string> _rowId;
+        public List<string> RowId
+        {
+            get { return _rowId; }
+            set
+            {
+                _rowId = value;
+                OnPropertyChanged();
+            }
+        }
+        private string _selectedRow;
+        public string SelectedRow
+        {
+            get { return _selectedRow; }
+            set
+            {
+                _selectedRow = value;
                 OnPropertyChanged();
             }
         }
@@ -100,6 +124,7 @@ namespace DummyDB.ViewModel
         public void LoadTreeView()
         {
             Tables= new List<Table>();
+            RowId = null;
             ((MainWindow)System.Windows.Application.Current.MainWindow).foreignKeys.Columns.Clear();
             ((MainWindow)System.Windows.Application.Current.MainWindow).dataTree.Items.Clear();
             List<TableScheme> schemes = LoadSchemes();
@@ -203,28 +228,37 @@ namespace DummyDB.ViewModel
         {
             DataTable newDataTable = new DataTable();
             Table primaryTable = ReferenceChecker.FindTable(schemeTablePairs.Values.ToList(), column.ReferencedTable);
-            Column primaryColumn = primaryTable.Scheme.Columns.Find(el => el.Name == column.ReferencedColumn);
-            var ids = table.Rows.Select(row => row.Data[column]);
+            Column primaryColumn = primaryTable.Scheme.Columns[0];
             AddColumnsToDataTable(primaryTable.Scheme.Columns, newDataTable);
-            List<Row> newRows= new List<Row>();
+            List<Row> newRow= new List<Row>();
             foreach(Row row in primaryTable.Rows)
             {
-                if (ids.Contains(row.Data[primaryColumn]))
+                if (row.Data[primaryColumn].ToString() == table.Rows[int.Parse(SelectedRow)].Data[column].ToString())
                 {
-                    newRows.Add(row);
+                    newRow.Add(row);
+                    break;
                 }
             }
-            AddRowsToDataTable(newRows, newDataTable);
+            AddRowsToDataTable(newRow, newDataTable);
             ForeignKeys = newDataTable;
         }
 
         public ICommand ShowForeignKeys => new CommandDelegate(param =>
         {
-            Table table = Tables.Find(el => el.Scheme.Name == SelectedDataTable.TableName);
+            Table table = schemeTablePairs[SelectedTable];
             Column column = table.Scheme.Columns.Find(col => col.Name == SelectedColumn);
             CreateForeignKeysTable(table, column);
         });
-
+        
+        private void CreateRowsList(Table table, Column column)
+        {
+            List<string> rowId = new List<string>();
+            foreach (Row row in table.Rows)
+            {
+                rowId.Add(row.Data[table.Scheme.Columns[0]].ToString());
+            }
+            RowId = rowId;
+        }
         private void AddColumnsToDataTable(List<Column> columns, DataTable dataTable)
         {
             foreach (Column column in columns)
@@ -274,6 +308,7 @@ namespace DummyDB.ViewModel
             CreateTableWindow CreateTable = new CreateTableWindow();
             CreateTableViewModel vmCreate = new CreateTableViewModel();
             CreateTable.DataContext = vmCreate;
+            vmCreate.Columns = ReferenceChecker.CreatePrimaryColumn();
             vmCreate.FolderPath = folderPath;
             vmCreate.Window = CreateTable;
             vmCreate.Tables = Tables;

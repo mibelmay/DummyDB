@@ -146,5 +146,20 @@ namespace DummyDB.ViewModel
             }
             return false;
         }
+
+        public static List<Column> CreatePrimaryColumn()
+        {
+            List<Column> columns = new List<Column>();
+            columns.Add(
+                new Column
+                {
+                    Name = "id",
+                    Type = "uint",
+                    IsPrimary = true,
+                    ReferencedTable = null,
+                    ReferencedColumn = null
+                });
+            return columns;
+        }
     }
 }
