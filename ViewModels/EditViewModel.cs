@@ -118,6 +118,7 @@ namespace DummyDB.ViewModel
             {
                 if (column.Name == columnName)
                 {
+                    ShowMessage($"Столбец с названием {ColumnName} уже существует");
                     return true;
                 }
             }
@@ -137,20 +138,15 @@ namespace DummyDB.ViewModel
 
         public void RenameColumn()
         {
-            if (SelectedColumn == null || ColumnName == "" || ColumnName == null)
+            if (SelectedColumn == null || ColumnName == "" || ColumnName == null || IfColumnExist(ColumnName))
             {
-                return;
-            }
-            if (IfColumnExist(ColumnName))
-            {
-                ShowMessage($"Колонка с названием {ColumnName} уже существует");
                 return;
             }
             foreach (Column column in scheme.Columns)
             {
                 if (column.Name == SelectedColumn)
                 {
-                    if(column.IsPrimary && column.ReferencedColumn == null)
+                    if(column.IsPrimary && column.ReferencedTable == null)
                     {
                         ShowMessage($"Нельзя переименовать столбец id");
                         return;
@@ -210,7 +206,6 @@ namespace DummyDB.ViewModel
             }
             if (IfColumnExist(NewColumnName))
             {
-                ShowMessage($"Колонка с названием {NewColumnName} уже существует");
                 return;
             }
             if(!CheckForeignKey())
