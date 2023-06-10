@@ -1,14 +1,14 @@
 ﻿using DummyDB.Core;
-using System.Text.Json;
-using System.Data;
-using System.Windows.Input;
-using System.Collections.Generic;
-using System.IO;
 using System;
-using System.Windows.Forms;
-using System.Windows.Controls;
-using System.Text;
+using System.Collections.Generic;
+using System.Data;
+using System.IO;
 using System.Linq;
+using System.Text;
+using System.Text.Json;
+using System.Windows.Controls;
+using System.Windows.Forms;
+using System.Windows.Input;
 
 namespace DummyDB.ViewModel
 {
@@ -142,15 +142,15 @@ namespace DummyDB.ViewModel
             {
                 return;
             }
+            if (SelectedColumn == "id")
+            {
+                ShowMessage($"Нельзя переименовать столбец id");
+                return;
+            }
             foreach (Column column in scheme.Columns)
             {
                 if (column.Name == SelectedColumn)
                 {
-                    if(column.IsPrimary && column.ReferencedTable == null)
-                    {
-                        ShowMessage($"Нельзя переименовать столбец id");
-                        return;
-                    }
                     column.Name = ColumnName;
                 }
             }
@@ -159,24 +159,15 @@ namespace DummyDB.ViewModel
 
         public void DeleteColumn()
         {
-            if (DeletedColumn == null || DeletedColumn == "")
-            {
-                return;
-            }
-            if(!Validation("Вы уверены, что хотите удалить столбец?"))
+            if(!IsRemovalValid())
             {
                 return;
             }
             foreach (Column column in scheme.Columns)
             {
-                if (DeletedColumn == column.Name)
+                if (column.Name == DeletedColumn)
                 {
-                    if(column.IsPrimary && column.ReferencedColumn == null)
-                    {
-                        ShowMessage("Нельзя удалить столбец id");
-                        return;
-                    }
-                    ColumnNames.Remove(column.Name);
+                    //ColumnNames.Remove(column.Name);
                     scheme.Columns.Remove(column);
                     foreach (var row in table.Rows)
                     {
@@ -186,6 +177,24 @@ namespace DummyDB.ViewModel
                 }
             }
             UpdateColumnNames();
+        }
+
+        private bool IsRemovalValid()
+        {
+            if (DeletedColumn == null || DeletedColumn == "")
+            {
+                return false;
+            }
+            if (DeletedColumn == "id")
+            {
+                ShowMessage("Нельзя удалить столбец id");
+                return false;
+            }
+            if (!Validation("Вы уверены, что хотите удалить столбец?"))
+            {
+                return false;
+            }
+            return true;
         }
 
         public bool Validation(string message)
