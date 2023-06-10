@@ -124,7 +124,6 @@ namespace DummyDB.ViewModel
         public void LoadTreeView()
         {
             Tables= new List<Table>();
-            RowId = null;
             ((MainWindow)System.Windows.Application.Current.MainWindow).foreignKeys.Columns.Clear();
             ((MainWindow)System.Windows.Application.Current.MainWindow).dataTree.Items.Clear();
             List<TableScheme> schemes = LoadSchemes();
@@ -192,6 +191,7 @@ namespace DummyDB.ViewModel
         private void TableTreeSelected(object sender, RoutedEventArgs e)
         {
             ((MainWindow)System.Windows.Application.Current.MainWindow).foreignKeys.Columns.Clear();
+            RowId = null;
             DataTable dataTable = new DataTable();
             string tableName = ((TreeViewItem)sender).Header.ToString();
             foreach(var pair in schemeTablePairs)
@@ -215,7 +215,7 @@ namespace DummyDB.ViewModel
             List<string> columnNames = new List<string>();
             foreach(Column column in table.Scheme.Columns)
             {
-                if(column.ReferencedColumn == null)
+                if(column.ReferencedTable == null)
                 {
                     continue;
                 }
@@ -227,13 +227,13 @@ namespace DummyDB.ViewModel
         private void CreateForeignKeysTable(Table table, Column column)
         {
             DataTable newDataTable = new DataTable();
-            Table primaryTable = ReferenceChecker.FindTable(schemeTablePairs.Values.ToList(), column.ReferencedTable);
+            Table primaryTable = ReferenceChecker.FindTable(Tables, column.ReferencedTable);
             Column primaryColumn = primaryTable.Scheme.Columns[0];
             AddColumnsToDataTable(primaryTable.Scheme.Columns, newDataTable);
-            List<Row> newRow= new List<Row>();
+            List<Row> newRow = new List<Row>();
             foreach(Row row in primaryTable.Rows)
             {
-                if (row.Data[primaryColumn].ToString() == table.Rows[int.Parse(SelectedRow)].Data[column].ToString())
+                if ((uint)row.Data[primaryColumn] == (uint)table.Rows[int.Parse(SelectedRow)].Data[column])
                 {
                     newRow.Add(row);
                     break;
@@ -246,7 +246,7 @@ namespace DummyDB.ViewModel
         public ICommand ShowForeignKeys => new CommandDelegate(param =>
         {
             Table table = schemeTablePairs[SelectedTable];
-            Column column = table.Scheme.Columns.Find(col => col.Name == SelectedColumn);
+            Column column = ReferenceChecker.FindColumn(table, SelectedColumn);
             CreateForeignKeysTable(table, column);
         });
         

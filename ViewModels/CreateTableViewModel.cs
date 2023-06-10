@@ -173,7 +173,7 @@ namespace DummyDB.ViewModel
 
         public void CreateEmptyTable(TableScheme scheme)
         {
-            string newFile = "";
+            string newFile = "0";
             foreach(Column column in scheme.Columns)
             {
                 string addValue = GetDefaultValue(column).ToString();

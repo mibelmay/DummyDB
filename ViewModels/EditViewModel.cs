@@ -150,9 +150,9 @@ namespace DummyDB.ViewModel
             {
                 if (column.Name == SelectedColumn)
                 {
-                    if(column.IsPrimary)
+                    if(column.IsPrimary && column.ReferencedColumn == null)
                     {
-                        ShowMessage($"Нельзя переименовать столбец с Primary key");
+                        ShowMessage($"Нельзя переименовать столбец id");
                         return;
                     }
                     column.Name = ColumnName;
@@ -175,9 +175,9 @@ namespace DummyDB.ViewModel
             {
                 if (DeletedColumn == column.Name)
                 {
-                    if(column.IsPrimary)
+                    if(column.IsPrimary && column.ReferencedColumn == null)
                     {
-                        ShowMessage("Нельзя удалить столбец с Primary key");
+                        ShowMessage("Нельзя удалить столбец id");
                         return;
                     }
                     ColumnNames.Remove(column.Name);
@@ -472,26 +472,24 @@ namespace DummyDB.ViewModel
 
         public bool CheckForeignKey()
         {
-            if (!IsPrimaryKey)
-            {
-                return true;
-            }
-            if (ReferencedTable == null || ReferencedColumn == null)
+            if (!IsPrimaryKey || ReferencedTable == null || ReferencedColumn == null)
             {
                 ReferencedTable = null;
                 ReferencedColumn = null;
+                IsPrimaryKey = false;
+                return true;
             }
             if(ReferencedTable == TableName)
             {
                 ShowMessage($"Таблица не может ссылаться сама на себя");
                 return false;
             }
-            if (NewColumnType == "uint")
+            if (NewColumnType != "uint")
             {
                 ShowMessage("Столбец с Primary key должен быть типа uint");
-                return true;
+                return false;
             }
-            return false;
+            return true;
         }
 
         public void LoadColumnNames(string tableName)
