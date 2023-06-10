@@ -167,16 +167,20 @@ namespace DummyDB.ViewModel
             {
                 if (column.Name == DeletedColumn)
                 {
-                    //ColumnNames.Remove(column.Name);
                     scheme.Columns.Remove(column);
-                    foreach (var row in table.Rows)
-                    {
-                        row.Data.Remove(column);
-                    }
+                    DeleteColumnFromTable(column);
                     break;
                 }
             }
             UpdateColumnNames();
+        }
+
+        private void DeleteColumnFromTable(Column column)
+        {
+            foreach (var row in table.Rows)
+            {
+                row.Data.Remove(column);
+            }
         }
 
         private bool IsRemovalValid()
