@@ -68,7 +68,12 @@ namespace DummyDB.ViewModel
         public string ReferencedTable
         {
             get { return _referencedTable; }
-            set { _referencedTable = value; LoadColumnNames(_referencedTable); OnPropertyChanged(); }
+            set 
+            { 
+                _referencedTable = value; 
+                LoadColumnNames(_referencedTable); 
+                OnPropertyChanged();
+            }
         }
         private List<string> _tableNames;
         public List<string> TableNames
@@ -92,16 +97,7 @@ namespace DummyDB.ViewModel
 
         public ICommand AddColumn => new CommandDelegate(patameter =>
         {
-            if (ColumnName == "" || Type == null)
-            {
-                return;
-            }
-            if(IfColumnExist(ColumnName))
-            {
-                MessageBox.Show($"Столбец с именем {ColumnName} уже добавлен в таблицу");
-                return;
-            }
-            if(!CheckForeignKey())
+            if (ColumnName == "" || Type == null || IfColumnExist(ColumnName) || !CheckForeignKey())
             {
                 return;
             }
@@ -120,18 +116,12 @@ namespace DummyDB.ViewModel
 
         public ICommand CreateTable => new CommandDelegate(patameter =>
         {
-            if (TableName == "" || TableName == null || _columns.Count == 0)
+            if (TableName == "" || TableName == null || _columns.Count == 1)
             {
                 MessageBox.Show("Заполните все поля");
                 return;
             }
-            TableScheme scheme = new TableScheme()
-            {
-                Name = TableName,
-                Columns = _columns
-            };
-            CreateJson(scheme);
-            CreateEmptyTable(scheme);
+            CreateEmptyTable(CreateJson());
             MessageBox.Show($"Таблица создана по пути {FolderPath}");
             Window.Close();
         });
@@ -149,7 +139,7 @@ namespace DummyDB.ViewModel
             {
                 return true;
             }
-            MessageBox.Show($"Столбец с Primaty key должен быть типа uint");
+            MessageBox.Show($"Столбец с Foreign key должен быть типа uint");
             return false;
         }
 
@@ -159,21 +149,28 @@ namespace DummyDB.ViewModel
             {
                 if (column.Name == columnName)
                 {
+                    MessageBox.Show($"Столбец с именем {ColumnName} уже добавлен в таблицу");
                     return true;
                 }
             }
             return false;
         }
 
-        public void CreateJson(TableScheme scheme)
+        public TableScheme CreateJson()
         {
+            TableScheme scheme = new TableScheme()
+            {
+                Name = TableName,
+                Columns = _columns
+            };
             string json = JsonSerializer.Serialize<TableScheme>(scheme);
             File.WriteAllText($"{FolderPath}\\{TableName}.json", json);
+            return scheme;
         }
 
         public void CreateEmptyTable(TableScheme scheme)
         {
-            string newFile = "0";
+            string newFile = "";
             foreach(Column column in scheme.Columns)
             {
                 string addValue = GetDefaultValue(column).ToString();
@@ -206,6 +203,7 @@ namespace DummyDB.ViewModel
             Columns = newColumns;
         }
 
+        //Этот метод не понадобится если я уберу referencedColumn
         public void LoadColumnNames(string tableName)
         {
             List<string> names = new List<string>();

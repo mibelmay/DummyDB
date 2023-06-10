@@ -73,8 +73,8 @@ namespace DummyDB.ViewModel
                 OnPropertyChanged();
             }
         }
-        private List<string> _rowId;
-        public List<string> RowId
+        private List<uint> _rowId;
+        public List<uint> RowId
         {
             get { return _rowId; }
             set
@@ -83,8 +83,8 @@ namespace DummyDB.ViewModel
                 OnPropertyChanged();
             }
         }
-        private string _selectedRow;
-        public string SelectedRow
+        private uint _selectedRow;
+        public uint SelectedRow
         {
             get { return _selectedRow; }
             set
@@ -233,7 +233,7 @@ namespace DummyDB.ViewModel
             List<Row> newRow = new List<Row>();
             foreach(Row row in primaryTable.Rows)
             {
-                if ((uint)row.Data[primaryColumn] == (uint)table.Rows[int.Parse(SelectedRow)].Data[column])
+                if ((uint)row.Data[primaryColumn] == (uint)table.Rows[(int)SelectedRow].Data[column])
                 {
                     newRow.Add(row);
                     break;
@@ -252,10 +252,10 @@ namespace DummyDB.ViewModel
         
         private void CreateRowsList(Table table, Column column)
         {
-            List<string> rowId = new List<string>();
+            List<uint> rowId = new List<uint>();
             foreach (Row row in table.Rows)
             {
-                rowId.Add(row.Data[table.Scheme.Columns[0]].ToString());
+                rowId.Add((uint)row.Data[table.Scheme.Columns[0]]);
             }
             RowId = rowId;
         }

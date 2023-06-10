@@ -43,7 +43,7 @@
         <TextBlock Text="Связать столбец:" Grid.Row="3" Margin="40,0,0,0" FontSize="18"/>
         <WrapPanel Grid.Row="3" Height="20" VerticalAlignment="Top" Margin="40,30,0,0">
             <CheckBox IsChecked="{Binding IsPrimaryKey}" Height="18" Margin="0,0,0,0">
-                <TextBlock> Is primary key</TextBlock>
+                <TextBlock> Is foreign key</TextBlock>
             </CheckBox>
             <TextBlock Text="Таблица: " Margin="10,0,0,0"/>
             <ComboBox ItemsSource="{Binding TableNames}" SelectedItem="{Binding ReferencedTable}"/>
