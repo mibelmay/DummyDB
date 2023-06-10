@@ -101,7 +101,11 @@ namespace DummyDB.ViewModel
                 MessageBox.Show($"Столбец с именем {ColumnName} уже добавлен в таблицу");
                 return;
             }
-            CheckForeignKey();
+            if(!CheckForeignKey())
+            {
+                MessageBox.Show($"Столбец с Primaty key должен быть типа uint");
+                return;
+            }
             _columns.Add(
                 new Column
                 {
@@ -132,14 +136,19 @@ namespace DummyDB.ViewModel
             Window.Close();
         });
 
-        public void CheckForeignKey()
+        public bool CheckForeignKey()
         {
-            if (IsPrimaryKey && (ReferencedTable == null || ReferencedColumn == null))
+            if(!IsPrimaryKey || ReferencedTable == null || ReferencedColumn == null)
             {
                 ReferencedTable = null;
                 ReferencedColumn = null;
-                return;
+                return true;
             }
+            if(Type == "uint")
+            {
+                return true;
+            }
+            return false;
         }
 
         public bool IfColumnExist(string columnName)

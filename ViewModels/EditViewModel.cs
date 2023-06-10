@@ -8,7 +8,7 @@ using System;
 using System.Windows.Forms;
 using System.Windows.Controls;
 using System.Text;
-using System.Windows.Data;
+using System.Linq;
 
 namespace DummyDB.ViewModel
 {
@@ -74,6 +74,26 @@ namespace DummyDB.ViewModel
                 _deleteColumn = value; OnPropertyChanged();
             }
         }
+        private string _referencedTable;
+        public string ReferencedTable
+        {
+            get { return _referencedTable; }
+            set { _referencedTable = value; LoadColumnNames(_referencedTable); OnPropertyChanged(); }
+        }
+        private string _referencedColumn;
+        public string ReferencedColumn
+        {
+            get { return _referencedColumn; }
+            set { _referencedColumn = value; OnPropertyChanged(); }
+        }
+        private bool _isPrimaryKey;
+        public bool IsPrimaryKey
+        {
+            get { return _isPrimaryKey; }
+            set { _isPrimaryKey = value; OnPropertyChanged(); }
+        }
+        public List<Table> Tables { get; set; }
+        public List<string> TableNames { get; set; }
         public string folderPath { get; set; }
         public DataGrid dataGrid { get; set; }
 
@@ -130,6 +150,11 @@ namespace DummyDB.ViewModel
             {
                 if (column.Name == SelectedColumn)
                 {
+                    if(column.IsPrimary)
+                    {
+                        ShowMessage($"Нельзя переименовать столбец с Primary key");
+                        return;
+                    }
                     column.Name = ColumnName;
                 }
             }
@@ -150,6 +175,11 @@ namespace DummyDB.ViewModel
             {
                 if (DeletedColumn == column.Name)
                 {
+                    if(column.IsPrimary)
+                    {
+                        ShowMessage("Нельзя удалить столбец с Primary key");
+                        return;
+                    }
                     ColumnNames.Remove(column.Name);
                     scheme.Columns.Remove(column);
                     foreach (var row in table.Rows)
@@ -183,10 +213,17 @@ namespace DummyDB.ViewModel
                 ShowMessage($"Колонка с названием {NewColumnName} уже существует");
                 return;
             }
+            if(!CheckForeignKey())
+            {
+                return;
+            }
             Column newColumn = new Column 
             { 
                 Name = NewColumnName, 
-                Type = NewColumnType
+                Type = NewColumnType,
+                IsPrimary = IsPrimaryKey,
+                ReferencedTable = ReferencedTable,
+                ReferencedColumn= ReferencedColumn
             };
             scheme.Columns.Add(newColumn);
             ColumnNames.Add(NewColumnName);
@@ -276,6 +313,11 @@ namespace DummyDB.ViewModel
                 return;
             }
             DataRow selectedRow = DataTable.Rows[index];
+            if(!ReferenceChecker.IsRemovalValid(Tables, table, table.Rows[index]))
+            {
+                ShowMessage($"Вы не можете удалить строку {index + 1}, т.к. на нее ссылаются данные из других таблиц");
+                return;
+            }
             if(!Validation("Вы хорошо подумали?"))
             {
                 return;
@@ -312,6 +354,14 @@ namespace DummyDB.ViewModel
                     { 
                         return false;
                     }
+                    if (ReferenceChecker.CheckForeignKey(scheme.Columns[j]))
+                    {
+                        if(!ReferenceChecker.CheckReference(Tables, scheme.Columns[j], data))
+                        {
+                            ShowMessage($"Не обнаружена строка с {scheme.Columns[j].ReferencedColumn} {data} в таблице {scheme.Columns[j].ReferencedTable}");
+                            return false;
+                        }
+                    } 
                     if (i >= table.Rows.Count)
                     {
                         table.Rows.Add(
@@ -319,12 +369,22 @@ namespace DummyDB.ViewModel
                             { 
                                 Data = new Dictionary<Column, object>() 
                             });
+                        if (ReferenceChecker.CheckPrimaryKey(scheme.Columns[j]))
+                        {
+                            table.Rows[i].Data[scheme.Columns[j]] = (uint)table.Rows[i - 1].Data[scheme.Columns[j]] + 1;
+                            continue;
+                        }
+                    }
+                    if (ReferenceChecker.CheckPrimaryKey(scheme.Columns[j]))
+                    {
+                        continue;
                     }
                     table.Rows[i].Data[scheme.Columns[j]] = data;
                 }
             }
             return true;
         }
+
 
         public object CheckData(DataRow row, Column column)
         {
@@ -405,9 +465,46 @@ namespace DummyDB.ViewModel
             }
         }
 
-        public void ShowMessage(string message)
+        public static void ShowMessage(string message)
         {
             MessageBox.Show(message);
+        }
+
+        public bool CheckForeignKey()
+        {
+            if (!IsPrimaryKey)
+            {
+                return true;
+            }
+            if (ReferencedTable == null || ReferencedColumn == null)
+            {
+                ReferencedTable = null;
+                ReferencedColumn = null;
+            }
+            if(ReferencedTable == TableName)
+            {
+                ShowMessage($"Таблица не может ссылаться сама на себя");
+                return false;
+            }
+            if (NewColumnType == "uint")
+            {
+                ShowMessage("Столбец с Primary key должен быть типа uint");
+                return true;
+            }
+            return false;
+        }
+
+        public void LoadColumnNames(string tableName)
+        {
+            List<string> names = new List<string>();
+            foreach (Table table in Tables)
+            {
+                if (table.Scheme.Name == tableName)
+                {
+                    names = table.Scheme.Columns.Select(el => el.Name).ToList();
+                }
+            }
+            ColumnNames = names;
         }
     }
 }

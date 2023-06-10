@@ -25,6 +25,16 @@ namespace DummyDB.ViewModel
                 OnPropertyChanged();
             }
         }
+        private DataTable _foreignKeys;
+        public DataTable ForeignKeys
+        {
+            get { return _foreignKeys; }
+            set
+            {
+                _foreignKeys = value;
+                OnPropertyChanged();
+            }
+        }
         private string _message;
         public string Message
         {
@@ -38,6 +48,27 @@ namespace DummyDB.ViewModel
         public DataTable SelectedDataTable { get; set; }
         public TableScheme SelectedTable { get; set; }
         public string folderPath { get; set; }
+        public List<Table> Tables { get; set; }
+        private List<string> _columnNames;
+        public List<string> ColumnNames
+        {
+            get { return _columnNames; }
+            set
+            {
+                _columnNames = value;
+                OnPropertyChanged();
+            }
+        }
+        private string _selectedColumn;
+        public string SelectedColumn
+        {
+            get { return _selectedColumn; }
+            set
+            {
+                _selectedColumn = value;
+                OnPropertyChanged();
+            }
+        }
 
         public ICommand OpenSourceClick => new CommandDelegate(parameter =>
         {
@@ -68,6 +99,8 @@ namespace DummyDB.ViewModel
 
         public void LoadTreeView()
         {
+            Tables= new List<Table>();
+            ((MainWindow)System.Windows.Application.Current.MainWindow).foreignKeys.Columns.Clear();
             ((MainWindow)System.Windows.Application.Current.MainWindow).dataTree.Items.Clear();
             List<TableScheme> schemes = LoadSchemes();
             foreach (string file in Directory.EnumerateFiles(folderPath))
@@ -82,6 +115,7 @@ namespace DummyDB.ViewModel
                     string[] line = file.Split("\\");
                     Message = $"Не найдена схема для таблицы {line[line.Length - 1].Replace(".csv", "")}";
                 }
+                Tables.Add(table);
             }
         }
 
@@ -104,7 +138,7 @@ namespace DummyDB.ViewModel
             Table table = new Table();
             foreach (TableScheme scheme in schemes)
             {
-                table = TableReader.Read(scheme, file);
+                table = TableReader.Read(Tables, scheme, file);
                 if (table == null)
                 {
                     continue;
@@ -125,19 +159,14 @@ namespace DummyDB.ViewModel
             treeItem.Selected += TableTreeSelected;
             for (int i = 0; i < scheme.Columns.Count; i++)
             {
-                treeItem.Items.Add(new TreeViewItem { Header = scheme.Columns[i].Name + " - " + scheme.Columns[i].Type, });
-                ((TreeViewItem)treeItem.Items[i]).Selected += ColumnTreeSelected;
+                treeItem.Items.Add(new TreeViewItem { Header = scheme.Columns[i].Name + " - " + scheme.Columns[i].Type + " - primary: " + scheme.Columns[i].IsPrimary });
             }
             ((MainWindow)System.Windows.Application.Current.MainWindow).dataTree.Items.Add(treeItem);
         }
 
-        private void ColumnTreeSelected(object sender, RoutedEventArgs e)
-        {
-            System.Windows.MessageBox.Show($"{((TreeViewItem)sender).Header.ToString()} вот такой узелок вы выбрали");
-        }
-
         private void TableTreeSelected(object sender, RoutedEventArgs e)
         {
+            ((MainWindow)System.Windows.Application.Current.MainWindow).foreignKeys.Columns.Clear();
             DataTable dataTable = new DataTable();
             string tableName = ((TreeViewItem)sender).Header.ToString();
             foreach(var pair in schemeTablePairs)
@@ -147,6 +176,7 @@ namespace DummyDB.ViewModel
                     dataTable.TableName = tableName;
                     AddColumnsToDataTable(pair.Key.Columns, dataTable);
                     AddRowsToDataTable(pair.Value.Rows, dataTable);
+                    UpdateColumnNames(pair.Value);
                     SelectedTable = pair.Key;
                     break;
                 }
@@ -154,6 +184,46 @@ namespace DummyDB.ViewModel
             DataTable = dataTable;
             SelectedDataTable = dataTable;
         }
+
+        private void UpdateColumnNames(Table table)
+        {
+            List<string> columnNames = new List<string>();
+            foreach(Column column in table.Scheme.Columns)
+            {
+                if(column.ReferencedColumn == null)
+                {
+                    continue;
+                }
+                columnNames.Add(column.Name);
+            }
+            ColumnNames = columnNames;
+        }
+
+        private void CreateForeignKeysTable(Table table, Column column)
+        {
+            DataTable newDataTable = new DataTable();
+            Table primaryTable = ReferenceChecker.FindTable(schemeTablePairs.Values.ToList(), column.ReferencedTable);
+            Column primaryColumn = primaryTable.Scheme.Columns.Find(el => el.Name == column.ReferencedColumn);
+            var ids = table.Rows.Select(row => row.Data[column]);
+            AddColumnsToDataTable(primaryTable.Scheme.Columns, newDataTable);
+            List<Row> newRows= new List<Row>();
+            foreach(Row row in primaryTable.Rows)
+            {
+                if (ids.Contains(row.Data[primaryColumn]))
+                {
+                    newRows.Add(row);
+                }
+            }
+            AddRowsToDataTable(newRows, newDataTable);
+            ForeignKeys = newDataTable;
+        }
+
+        public ICommand ShowForeignKeys => new CommandDelegate(param =>
+        {
+            Table table = Tables.Find(el => el.Scheme.Name == SelectedDataTable.TableName);
+            Column column = table.Scheme.Columns.Find(col => col.Name == SelectedColumn);
+            CreateForeignKeysTable(table, column);
+        });
 
         private void AddColumnsToDataTable(List<Column> columns, DataTable dataTable)
         {
@@ -206,11 +276,16 @@ namespace DummyDB.ViewModel
             CreateTable.DataContext = vmCreate;
             vmCreate.FolderPath = folderPath;
             vmCreate.Window = CreateTable;
-            vmCreate.Tables = schemeTablePairs.Values.ToList();
-            vmCreate.TableNames = schemeTablePairs.Select(pair => pair.Key.Name).ToList();
+            vmCreate.Tables = Tables;
+            vmCreate.TableNames = Tables.Select(x => x.Scheme.Name).ToList();
             CreateTable.ShowDialog();
         });
 
+        public void Click(object sender, SelectedCellsChangedEventArgs e)
+        {
+            DataGridCell cell = (DataGridCell)sender;
+            System.Windows.MessageBox.Show("ура победа");
+        }
         public ICommand Edit_Click => new CommandDelegate(parameter =>
         {
             if (SelectedDataTable == null) return;
@@ -222,8 +297,10 @@ namespace DummyDB.ViewModel
             vmEdit.TableName = SelectedDataTable.TableName;
             vmEdit.scheme = SelectedTable;
             vmEdit.table = schemeTablePairs[SelectedTable];
+            vmEdit.Tables = schemeTablePairs.Values.ToList();
             vmEdit.ColumnNames = CreateColumnNamesList(vmEdit.scheme);
             vmEdit.oldFileName = SelectedDataTable.TableName;
+            vmEdit.TableNames = Tables.Select(x => x.Scheme.Name).ToList();
             vmEdit.folderPath = folderPath;
             newWindow.ShowDialog();
         });
