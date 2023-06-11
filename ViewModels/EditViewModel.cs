@@ -3,12 +3,12 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.IO;
-using System.Linq;
 using System.Text;
 using System.Text.Json;
 using System.Windows.Controls;
 using System.Windows.Forms;
 using System.Windows.Input;
+using DummyDB_5.Models;
 
 namespace DummyDB.ViewModel
 {
@@ -78,7 +78,7 @@ namespace DummyDB.ViewModel
         public string ReferencedTable
         {
             get { return _referencedTable; }
-            set { _referencedTable = value; LoadColumnNames(_referencedTable); OnPropertyChanged(); }
+            set { _referencedTable = value; OnPropertyChanged(); }
         }
         private string _referencedColumn;
         public string ReferencedColumn
@@ -213,34 +213,30 @@ namespace DummyDB.ViewModel
 
         public void AddNewColumn()
         {
-            if (NewColumnType == null || NewColumnName == "" || NewColumnName == null)
-            {
-                return;
-            }
-            if (IfColumnExist(NewColumnName))
-            {
-                return;
-            }
-            if(!CheckForeignKey())
+            if (NewColumnType == null || NewColumnName == null || IfColumnExist(NewColumnName) || !CheckForeignKey())
             {
                 return;
             }
             Column newColumn = new Column 
             { 
-                Name = NewColumnName, 
+                Name = NewColumnName,
                 Type = NewColumnType,
                 IsPrimary = IsPrimaryKey,
                 ReferencedTable = ReferencedTable,
                 ReferencedColumn= ReferencedColumn
             };
             scheme.Columns.Add(newColumn);
-            ColumnNames.Add(NewColumnName);
+            AddColumnToTable(newColumn);
+            UpdateColumnNames();
+        }
+
+        private void AddColumnToTable(Column newColumn)
+        {
             object addValue = GetDefaultValue(newColumn);
             for (int i = 0; i < table.Rows.Count; i++)
             {
                 table.Rows[i].Data[newColumn] = addValue;
             }
-            UpdateColumnNames();
         }
 
         public object GetDefaultValue(Column column)
@@ -298,7 +294,7 @@ namespace DummyDB.ViewModel
             ColumnNames = newColumnNames;
         }
 
-        public ICommand AddRow => new CommandDelegate(param =>
+        public ICommand AddRowToDataTable => new CommandDelegate(param =>
         {
             DataTable.Rows.Add(DataTable.NewRow());
         });
@@ -320,10 +316,9 @@ namespace DummyDB.ViewModel
             {
                 return;
             }
-            DataRow selectedRow = DataTable.Rows[index];
             if(!ReferenceChecker.IsRemovalValid(Tables, table, table.Rows[index]))
             {
-                ShowMessage($"Вы не можете удалить строку {index + 1}, т.к. на нее ссылаются данные из других таблиц");
+                ShowMessage($"Вы не можете удалить эту строку, т.к. на нее ссылаются данные из других таблиц");
                 return;
             }
             if(!Validation("Вы хорошо подумали?"))
@@ -353,124 +348,65 @@ namespace DummyDB.ViewModel
 
         public bool LoadChanges()
         {
+            DataChecker dataChecker = new DataChecker(DataTable);
             for (int i = 0; i < DataTable.Rows.Count; i++)
             {
                 for (int j = 0; j < scheme.Columns.Count; j++)
                 {
-                    object data = CheckData(DataTable.Rows[i], scheme.Columns[j]);
+                    object data = dataChecker.CheckData(DataTable.Rows[i], scheme.Columns[j]);
                     if (data == null) 
                     { 
                         return false;
                     }
-                    if (ReferenceChecker.CheckForeignKey(scheme.Columns[j]))
+                    if(!CheckColumnReferences(scheme.Columns[j], data))
                     {
-                        if(!ReferenceChecker.CheckReference(Tables, scheme.Columns[j], data))
-                        {
-                            ShowMessage($"Не обнаружена строка с {scheme.Columns[j].ReferencedColumn} {data} в таблице {scheme.Columns[j].ReferencedTable}");
-                            return false;
-                        }
-                    } 
-                    if (i >= table.Rows.Count)
-                    {
-                        table.Rows.Add(
-                            new Row() 
-                            { 
-                                Data = new Dictionary<Column, object>() 
-                            });
-                        if (ReferenceChecker.CheckPrimaryKey(scheme.Columns[j]))
-                        {
-                            table.Rows[i].Data[scheme.Columns[j]] = (uint)table.Rows[i - 1].Data[scheme.Columns[j]] + 1;
-                            continue;
-                        }
+                        return false;
                     }
-                    if (ReferenceChecker.CheckPrimaryKey(scheme.Columns[j]))
-                    {
-                        continue;
-                    }
-                    table.Rows[i].Data[scheme.Columns[j]] = data;
+                    WriteData(i, scheme.Columns[j], data);
                 }
             }
             return true;
         }
 
-
-        public object CheckData(DataRow row, Column column)
+        private void WriteData(int rowId, Column column, object data)
         {
-            string value = row[column.Name].ToString();
-            switch (column.Type)
+            bool isPrimary = ReferenceChecker.CheckPrimaryKey(column);
+            if (rowId >= table.Rows.Count)
             {
-                case ("int"):
-                    {
-                        return IntCase(value, row, column);
-                    }
-                case ("uint"):
-                    {
-                        return UintCase(value, row, column);
-                    }
-                case ("datetime"):
-                    {
-                        return DateTimeCase(value, row, column);
-                    }
-                case ("double"):
-                    {
-                        return DoubleCase(value, row, column);
-                    }
-                default:
-                    break;
+                AddRowToTable();
+                if (isPrimary)
+                {
+                    table.Rows[rowId].Data[column] = (uint)table.Rows[rowId - 1].Data[column] + 1;
+                    return;
+                }
             }
-            return value;
-        }
-
-        public object IntCase(string value, DataRow row, Column column)
-        {
-            if (int.TryParse(value, out int data))
+            if (!isPrimary)
             {
-                return data;
-            }
-            else
-            {
-                ShowMessage($"В сроке {DataTable.Rows.IndexOf(row) + 1} в столбце {column.Name} ({column.Type}) указаны некорректные данные");
-                return null;
+                table.Rows[rowId].Data[column] = data;
             }
         }
 
-        public object UintCase(string value, DataRow row, Column column)
+        private void AddRowToTable()
         {
-            if (uint.TryParse(value, out uint data))
-            {
-                return data;
-            }
-            else
-            {
-                ShowMessage($"В сроке {DataTable.Rows.IndexOf(row) + 1} в столбце {column.Name} ({column.Type}) указаны некорректные данные");
-                return null;
-            }
+            table.Rows.Add(
+                new Row()
+                {
+                    Data = new Dictionary<Column, object>()
+                });
         }
 
-        public object DateTimeCase(string value, DataRow row, Column column)
+        private bool CheckColumnReferences(Column column, object data)
         {
-            if (DateTime.TryParse(value, out DateTime data))
+            if (!ReferenceChecker.CheckForeignKey(column))
             {
-                return data;
+                return true;
             }
-            else
+            if (!ReferenceChecker.CheckReference(Tables, column, data))
             {
-                ShowMessage($"В сроке {DataTable.Rows.IndexOf(row) + 1}  в столбце  {column.Name} ({column.Type}) указаны некорректные данные");
-                return null;
+                ShowMessage($"Не обнаружена строка с {column.ReferencedColumn} {data} в таблице {column.ReferencedTable}");
+                return false;
             }
-        }
-
-        public object DoubleCase(string value, DataRow row, Column column)
-        {
-            if (double.TryParse(value, out double data))
-            {
-                return data;
-            }
-            else
-            {
-                ShowMessage($"В сроке {DataTable.Rows.IndexOf(row) + 1}  в столбце  {column.Name} ({column.Type}) указаны некорректные данные");
-                return null;
-            }
+            return true;
         }
 
         public static void ShowMessage(string message)
@@ -487,30 +423,12 @@ namespace DummyDB.ViewModel
                 IsPrimaryKey = false;
                 return true;
             }
-            if(ReferencedTable == TableName)
-            {
-                ShowMessage($"Таблица не может ссылаться сама на себя");
-                return false;
-            }
             if (NewColumnType != "uint")
             {
-                ShowMessage("Столбец с Primary key должен быть типа uint");
+                ShowMessage("Столбец с Foreign key должен быть типа uint");
                 return false;
             }
             return true;
-        }
-
-        public void LoadColumnNames(string tableName)
-        {
-            List<string> names = new List<string>();
-            foreach (Table table in Tables)
-            {
-                if (table.Scheme.Name == tableName)
-                {
-                    names = table.Scheme.Columns.Select(el => el.Name).ToList();
-                }
-            }
-            ColumnNames = names;
         }
     }
 }

@@ -1,36 +1,17 @@
-﻿using System;
+﻿using DummyDB.Core;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using DummyDB.Core;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DummyDB.ViewModel
+namespace DummyDB_5.Models
 {
     public class ReferenceChecker
     {
-        public static bool CheckPrimaryKeys(Table table)
-        {
-            foreach (Column column in table.Scheme.Columns)
-            {
-                if (column.IsPrimary == true && column.ReferencedTable == null)
-                {
-                    if (column.Type != "uint")
-                    {
-                        return false;
-                    }
-                    if (!CheckIfDataUnique(table, column))
-                    {
-                        return false;
-                    }
-                }
-            }
-            return true;
-        }
-
         public static bool CheckForeignKey(Column column)
         {
-            if(column.ReferencedColumn != null)
+            if (column.ReferencedTable != null)
             {
                 return true;
             }
@@ -39,7 +20,7 @@ namespace DummyDB.ViewModel
 
         public static bool CheckPrimaryKey(Column column)
         {
-            if (column.IsPrimary && column.ReferencedColumn == null)
+            if (column.IsPrimary && column.ReferencedTable == null)
             {
                 return true;
             }
@@ -59,7 +40,7 @@ namespace DummyDB.ViewModel
 
         public static bool IsRemovalValid(List<Table> tables, Table table, Row row)
         {
-            for(int i = 0; i < table.Scheme.Columns.Count; i++)
+            for (int i = 0; i < table.Scheme.Columns.Count; i++)
             {
                 if (!CheckPrimaryKey(table.Scheme.Columns[i]))
                 {
@@ -76,22 +57,31 @@ namespace DummyDB.ViewModel
 
         public static bool IsReferenceExist(List<Table> tables, Table primaryTable, Column primaryColumn, Row deletedRow)
         {
-            foreach(Table table in tables)
+            foreach (Table table in tables)
             {
-                foreach(Column column in table.Scheme.Columns)
+                foreach (Column column in table.Scheme.Columns)
                 {
-                    if(column.ReferencedTable != primaryTable.Scheme.Name || column.ReferencedColumn != primaryColumn.Name)
+                    if (column.ReferencedTable != primaryTable.Scheme.Name)
                     {
                         continue;
                     }
-                    for (int i = 0; i < table.Rows.Count; i++)
+                    if (FindReference(table, column, primaryColumn, deletedRow))
                     {
-                        if ((uint)table.Rows[i].Data[column] == (uint)deletedRow.Data[primaryColumn])
-                        {
-                            return true;
-                        }
+                        return true;
                     }
                     return false;
+                }
+            }
+            return false;
+        }
+
+        private static bool FindReference(Table table, Column column, Column primaryColumn, Row deletedRow)
+        {
+            for (int i = 0; i < table.Rows.Count; i++)
+            {
+                if ((uint)table.Rows[i].Data[column] == (uint)deletedRow.Data[primaryColumn])
+                {
+                    return true;
                 }
             }
             return false;
@@ -120,24 +110,10 @@ namespace DummyDB.ViewModel
             }
             return null;
         }
-        public static bool CheckIfDataUnique(Table table, Column column)
-        {
-            List<string> data = new List<string>();
-            foreach (Row row in table.Rows)
-            {
-                if (!data.Contains(row.Data[column].ToString()))
-                {
-                    data.Add(row.Data[column].ToString());
-                    continue;
-                }
-                return false;
-            }
-            return true;
-        }
 
         public static bool CheckIfDataExist(Table table, Column column, object data)
         {
-            foreach(Row row in table.Rows)
+            foreach (Row row in table.Rows)
             {
                 if (row.Data[column].ToString() == data.ToString())
                 {
@@ -160,6 +136,20 @@ namespace DummyDB.ViewModel
                     ReferencedColumn = null
                 });
             return columns;
+        }
+
+        public static List<string> LoadPrimaryColumnsNames(List<Table> tables, string tableName)
+        {
+            List<string> names = new List<string>();
+            foreach (Table table in tables)
+            {
+                if (table.Scheme.Name == tableName)
+                {
+                    names.Add(table.Scheme.Columns[0].Name);
+                    break;
+                }
+            }
+            return names;
         }
     }
 }

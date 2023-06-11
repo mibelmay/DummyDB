@@ -203,7 +203,6 @@ namespace DummyDB.ViewModel
             Columns = newColumns;
         }
 
-        //Этот метод не понадобится если я уберу referencedColumn
         public void LoadColumnNames(string tableName)
         {
             List<string> names = new List<string>();
@@ -211,7 +210,8 @@ namespace DummyDB.ViewModel
             {
                 if (table.Scheme.Name == tableName)
                 {
-                    names = table.Scheme.Columns.Select(el => el.Name).ToList();
+                    names.Add(table.Scheme.Columns[0].Name);
+                    break;
                 }
             }
             ColumnNames = names;

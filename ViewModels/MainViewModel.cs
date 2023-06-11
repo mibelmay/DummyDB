@@ -9,6 +9,7 @@ using System.Windows.Controls;
 using System.Data;
 using System.Linq;
 using System.Data.Common;
+using DummyDB_5.Models;
 
 namespace DummyDB.ViewModel
 {
@@ -231,9 +232,10 @@ namespace DummyDB.ViewModel
             Column primaryColumn = primaryTable.Scheme.Columns[0];
             AddColumnsToDataTable(primaryTable.Scheme.Columns, newDataTable);
             List<Row> newRow = new List<Row>();
+            int rowNumber = FindRowNumber(table);
             foreach(Row row in primaryTable.Rows)
             {
-                if ((uint)row.Data[primaryColumn] == (uint)table.Rows[(int)SelectedRow].Data[column])
+                if ((uint)row.Data[primaryColumn] == (uint)table.Rows[rowNumber].Data[column])
                 {
                     newRow.Add(row);
                     break;
@@ -241,6 +243,18 @@ namespace DummyDB.ViewModel
             }
             AddRowsToDataTable(newRow, newDataTable);
             ForeignKeys = newDataTable;
+        }
+
+        private int FindRowNumber(Table table)
+        {
+            for(int i = 0; i < table.Rows.Count; i++)
+            {
+                if ((uint)table.Rows[i].Data[table.Scheme.Columns[0]] == SelectedRow)
+                {
+                    return i;
+                }
+            }
+            throw new Exception($"Не найдена запись с Id {SelectedRow} в таблице");
         }
 
         public ICommand ShowForeignKeys => new CommandDelegate(param =>
@@ -312,7 +326,7 @@ namespace DummyDB.ViewModel
             vmCreate.FolderPath = folderPath;
             vmCreate.Window = CreateTable;
             vmCreate.Tables = Tables;
-            vmCreate.TableNames = Tables.Select(x => x.Scheme.Name).ToList();
+            vmCreate.TableNames = CreateTableNamesList(true);
             CreateTable.ShowDialog();
         });
 
@@ -335,7 +349,7 @@ namespace DummyDB.ViewModel
             vmEdit.Tables = schemeTablePairs.Values.ToList();
             vmEdit.ColumnNames = CreateColumnNamesList(vmEdit.scheme);
             vmEdit.oldFileName = SelectedDataTable.TableName;
-            vmEdit.TableNames = Tables.Select(x => x.Scheme.Name).ToList();
+            vmEdit.TableNames = CreateTableNamesList(false);
             vmEdit.folderPath = folderPath;
             newWindow.ShowDialog();
         });
@@ -348,6 +362,20 @@ namespace DummyDB.ViewModel
                 columns.Add(column.Name);
             }
             return columns;
+        }
+
+        private List<string> CreateTableNamesList(bool containCurrentTable)
+        {
+            List<string> names = new List<string>();
+            foreach(Table table in Tables)
+            {
+                names.Add(table.Scheme.Name);
+            }
+            if(!containCurrentTable)
+            {
+                names.Remove(SelectedTable.Name);
+            }
+            return names;
         }
     }
 }
