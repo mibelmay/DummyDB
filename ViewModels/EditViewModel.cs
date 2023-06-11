@@ -1,13 +1,14 @@
 ﻿using DummyDB.Core;
-using System.Text.Json;
-using System.Data;
-using System.Windows.Input;
-using System.Collections.Generic;
-using System.IO;
 using System;
-using System.Windows.Forms;
-using System.Windows.Controls;
+using System.Collections.Generic;
+using System.Data;
+using System.IO;
 using System.Text;
+using System.Text.Json;
+using System.Windows.Controls;
+using System.Windows.Forms;
+using System.Windows.Input;
+using DummyDB_5.Models;
 
 namespace DummyDB.ViewModel
 {
@@ -40,7 +41,6 @@ namespace DummyDB.ViewModel
             set
             { _columnNames = value; OnPropertyChanged(); }
         }
-
         private string _columnName;
         public string ColumnName
         {
@@ -74,34 +74,41 @@ namespace DummyDB.ViewModel
                 _deleteColumn = value; OnPropertyChanged();
             }
         }
+        private string _referencedTable;
+        public string ReferencedTable
+        {
+            get { return _referencedTable; }
+            set { _referencedTable = value; OnPropertyChanged(); }
+        }
+        private string _referencedColumn;
+        public string ReferencedColumn
+        {
+            get { return _referencedColumn; }
+            set { _referencedColumn = value; OnPropertyChanged(); }
+        }
+        private bool _isPrimaryKey;
+        public bool IsPrimaryKey
+        {
+            get { return _isPrimaryKey; }
+            set { _isPrimaryKey = value; OnPropertyChanged(); }
+        }
+        public List<Table> Tables { get; set; }
+        public List<string> TableNames { get; set; }
         public string folderPath { get; set; }
         public DataGrid dataGrid { get; set; }
 
         public ICommand SaveScheme => new CommandDelegate(parameter =>
         {
-            if (TableName != scheme.Name)
-            {
-                scheme.Name = TableName;
-                File.Delete(folderPath + $"\\{oldFileName}.json");
-                File.Delete(folderPath + $"\\{oldFileName}.csv");
-            }
-            if (SelectedColumn != null && ColumnName != "" && ColumnName != null)
-            {
-                RenameColumn();
-            }
-            if (NewColumnType != null && NewColumnName != "" && NewColumnName != null)
-            {
-                AddNewColumn();
-            }
-            if (DeletedColumn != null && DeletedColumn != "")
-            {
-                DeleteColumn();
-            }
+            RenameTable();
+            RenameColumn();
+            AddNewColumn();
+            DeleteColumn();
+
             string json = JsonSerializer.Serialize(scheme);
             File.WriteAllText($"{folderPath}\\{scheme.Name}.json", json);
             SaveChangesToCsv();
-            ColumnName = DeletedColumn = NewColumnName = "";
-            SelectedColumn = NewColumnType = null;
+            ColumnName = NewColumnName = "";
+            SelectedColumn = NewColumnType = DeletedColumn = null;
             DisplayTable();
         });
 
@@ -111,17 +118,33 @@ namespace DummyDB.ViewModel
             {
                 if (column.Name == columnName)
                 {
+                    ShowMessage($"Столбец с названием {ColumnName} уже существует");
                     return true;
                 }
             }
             return false;
         }
 
+        public void RenameTable()
+        {
+            if (TableName == scheme.Name)
+            {
+                return;
+            }
+            scheme.Name = TableName;
+            File.Delete(folderPath + $"\\{oldFileName}.json");
+            File.Delete(folderPath + $"\\{oldFileName}.csv");
+        }
+
         public void RenameColumn()
         {
-            if (IfColumnExist(ColumnName))
+            if (SelectedColumn == null || ColumnName == "" || ColumnName == null || IfColumnExist(ColumnName))
             {
-                System.Windows.MessageBox.Show($"Колонка с названием {ColumnName} уже существует");
+                return;
+            }
+            if (SelectedColumn == "id")
+            {
+                ShowMessage($"Нельзя переименовать столбец id");
                 return;
             }
             foreach (Column column in scheme.Columns)
@@ -136,68 +159,90 @@ namespace DummyDB.ViewModel
 
         public void DeleteColumn()
         {
-            DialogResult dialogResult = MessageBox.Show("Вы уверены что хотите удалить столбец?", "Подтверждение", MessageBoxButtons.YesNo);
-            if (dialogResult == DialogResult.No)
+            if(!IsRemovalValid())
             {
                 return;
             }
             foreach (Column column in scheme.Columns)
             {
-                if (DeletedColumn == column.Name)
+                if (column.Name == DeletedColumn)
                 {
-                    ColumnNames.Remove(column.Name);
                     scheme.Columns.Remove(column);
-                    foreach (var row in table.Rows)
-                    {
-                        row.Data.Remove(column);
-                    }
+                    TableCreator.DeleteColumnFromTable(table, column);
                     break;
                 }
-            }
-        }
-
-        public void AddNewColumn()
-        {
-            if (IfColumnExist(NewColumnName))
-            {
-                System.Windows.MessageBox.Show($"Колонка с названием {NewColumnName} уже существует");
-                return;
-            }
-            Column newColumn = new Column { Name = NewColumnName, Type = NewColumnType };
-            scheme.Columns.Add(newColumn);
-            ColumnNames.Add(NewColumnName);
-            object addValue = GetDefaultValue(newColumn);
-            for (int i = 0; i < table.Rows.Count; i++)
-            {
-                table.Rows[i].Data[newColumn] = addValue;
             }
             UpdateColumnNames();
         }
 
-        public object GetDefaultValue(Column column)
+        private bool IsRemovalValid()
         {
-            if (column.Type == "string")
+            if (DeletedColumn == null || DeletedColumn == "")
             {
-                return "";
+                return false;
             }
-            else if (column.Type == "datetime")
+            if (DeletedColumn == "id")
             {
-                return DateTime.MinValue;
+                ShowMessage("Нельзя удалить столбец id");
+                return false;
             }
-            else
+            if (!Validation("Вы уверены, что хотите удалить столбец?"))
             {
-                return 0;
+                return false;
             }
+            return true;
+        }
+
+        public bool Validation(string message)
+        {
+            DialogResult dialogResult = MessageBox.Show(message, "Подтверждение", MessageBoxButtons.YesNo);
+            if (dialogResult == DialogResult.No)
+            {
+                return false;
+            }
+            return true;
+        }
+
+        public void AddNewColumn()
+        {
+            if (NewColumnType == null || NewColumnName == null || IfColumnExist(NewColumnName) || !CheckForeignKey())
+            {
+                return;
+            }
+            Column newColumn = new Column 
+            { 
+                Name = NewColumnName,
+                Type = NewColumnType,
+                IsPrimary = IsPrimaryKey,
+                ReferencedTable = ReferencedTable,
+                ReferencedColumn= ReferencedColumn
+            };
+            scheme.Columns.Add(newColumn);
+            TableCreator.AddColumnToTable(table, newColumn);
+            UpdateColumnNames();
         }
 
         public void DisplayTable()
         {
             DataTable dataTable = new DataTable();
             dataTable.TableName = TableName;
-            foreach(Column column in scheme.Columns)
+
+            AddColumnsToDataTable(dataTable);
+            AddRowsToDataTable(dataTable);
+
+            DataTable = dataTable;
+        }
+
+        public void AddColumnsToDataTable(DataTable dataTable)
+        {
+            foreach (Column column in scheme.Columns)
             {
                 dataTable.Columns.Add(column.Name);
             }
+        }
+
+        public void AddRowsToDataTable(DataTable dataTable)
+        {
             for (int i = 0; i < table.Rows.Count; i++)
             {
                 DataRow newRow = dataTable.NewRow();
@@ -207,7 +252,6 @@ namespace DummyDB.ViewModel
                 }
                 dataTable.Rows.Add(newRow);
             }
-            DataTable = dataTable;
         }
 
         public void UpdateColumnNames()
@@ -220,7 +264,7 @@ namespace DummyDB.ViewModel
             ColumnNames = newColumnNames;
         }
 
-        public ICommand AddRow => new CommandDelegate(param =>
+        public ICommand AddRowToDataTable => new CommandDelegate(param =>
         {
             DataTable.Rows.Add(DataTable.NewRow());
         });
@@ -238,19 +282,16 @@ namespace DummyDB.ViewModel
         public ICommand DeleteRow => new CommandDelegate(param =>
         {
             int index = dataGrid.SelectedIndex;
-            if (index == -1)
+            if (index == -1 || index >= table.Rows.Count)
             {
-                MessageBox.Show("Вы не выбрали строку для удаления");
                 return;
             }
-            if (index >= table.Rows.Count)
+            if(!ReferenceChecker.IsRemovalValid(Tables, table, table.Rows[index]))
             {
-                MessageBox.Show("Сначала сохраните добавленные строки");
+                ShowMessage($"Вы не можете удалить эту строку, т.к. на нее ссылаются данные из других таблиц");
                 return;
             }
-            DataRow selectedRow = DataTable.Rows[index];
-            DialogResult dialogResult = MessageBox.Show("Вы хорошо подумали?", "Подтверждение", MessageBoxButtons.YesNo);
-            if (dialogResult == DialogResult.No)
+            if(!Validation("Вы хорошо подумали?"))
             {
                 return;
             }
@@ -277,102 +318,60 @@ namespace DummyDB.ViewModel
 
         public bool LoadChanges()
         {
+            DataChecker dataChecker = new DataChecker(DataTable);
             for (int i = 0; i < DataTable.Rows.Count; i++)
             {
                 for (int j = 0; j < scheme.Columns.Count; j++)
                 {
-                    object data = CheckData(DataTable.Rows[i], scheme.Columns[j]);
+                    object data = dataChecker.CheckData(DataTable.Rows[i], scheme.Columns[j]);
                     if (data == null) 
                     { 
                         return false;
                     }
-                    if (i >= table.Rows.Count)
+                    if(!CheckColumnReferences(scheme.Columns[j], data))
                     {
-                        table.Rows.Add(new Row() { Data = new Dictionary<Column, object>() });
+                        return false;
                     }
-                    table.Rows[i].Data[scheme.Columns[j]] = data;
+                    TableCreator.WriteData(table, i, scheme.Columns[j], data);
                 }
             }
             return true;
         }
 
-        public object CheckData(DataRow row, Column column)
+        private bool CheckColumnReferences(Column column, object data)
         {
-            string value = row[column.Name].ToString();
-            switch (column.Type)
+            if (!ReferenceChecker.CheckForeignKey(column))
             {
-                case ("int"):
-                    {
-                        return IntCase(value, row, column);
-                    }
-                case ("uint"):
-                    {
-                        return UintCase(value, row, column);
-                    }
-                case ("datetime"):
-                    {
-                        return DateTimeCase(value, row, column);
-                    }
-                case ("double"):
-                    {
-                        return DoubleCase(value, row, column);
-                    }
-                default:
-                    break;
+                return true;
             }
-            return value;
+            if (!ReferenceChecker.CheckReference(Tables, column, data))
+            {
+                ShowMessage($"Не обнаружена строка с {column.ReferencedColumn} {data} в таблице {column.ReferencedTable}");
+                return false;
+            }
+            return true;
         }
 
-        public int? IntCase(string value, DataRow row, Column column)
+        public static void ShowMessage(string message)
         {
-            if (int.TryParse(value, out int data))
-            {
-                return data;
-            }
-            else
-            {
-                MessageBox.Show($"В сроке {DataTable.Rows.IndexOf(row) + 1} в столбце {column.Name} ({column.Type}) указаны некорректные данные");
-                return null;
-            }
+            MessageBox.Show(message);
         }
 
-        public uint? UintCase(string value, DataRow row, Column column)
+        public bool CheckForeignKey()
         {
-            if (uint.TryParse(value, out uint data))
+            if (!IsPrimaryKey || ReferencedTable == null || ReferencedColumn == null)
             {
-                return data;
+                ReferencedTable = null;
+                ReferencedColumn = null;
+                IsPrimaryKey = false;
+                return true;
             }
-            else
+            if (NewColumnType != "uint")
             {
-                MessageBox.Show($"В сроке {DataTable.Rows.IndexOf(row) + 1} в столбце {column.Name} ({column.Type}) указаны некорректные данные");
-                return null;
+                ShowMessage("Столбец с Foreign key должен быть типа uint");
+                return false;
             }
-        }
-
-        public DateTime? DateTimeCase(string value, DataRow row, Column column)
-        {
-            if (DateTime.TryParse(value, out DateTime data))
-            {
-                return data;
-            }
-            else
-            {
-                MessageBox.Show($"В сроке {DataTable.Rows.IndexOf(row) + 1}  в столбце  {column.Name} ({column.Type}) указаны некорректные данные");
-                return null;
-            }
-        }
-
-        public double? DoubleCase(string value, DataRow row, Column column)
-        {
-            if (double.TryParse(value, out double data))
-            {
-                return data;
-            }
-            else
-            {
-                MessageBox.Show($"В сроке {DataTable.Rows.IndexOf(row) + 1}  в столбце  {column.Name} ({column.Type}) указаны некорректные данные");
-                return null;
-            }
+            return true;
         }
     }
 }

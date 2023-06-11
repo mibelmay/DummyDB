@@ -5,6 +5,7 @@ using System.Text.Json;
 using System.Windows.Input;
 using System.Windows;
 using System.IO;
+using System.Linq;
 
 namespace DummyDB.ViewModel
 {
@@ -41,61 +42,130 @@ namespace DummyDB.ViewModel
                 OnPropertyChanged();
             }
         }
-        private List<Column> _columns = new List<Column>();
+        private List<Column> _columns;
         public List<Column> Columns
         {
-            get { return _columns; }
-            set { _columns = value; OnPropertyChanged();}
+            get 
+            { 
+                return _columns; 
+            }
+            set
+            {
+                _columns = value; 
+                OnPropertyChanged();
+            }
         }
         public string FolderPath { get; set; }
         public CreateTableWindow Window { get; set; }
-        
+        private bool _isPrimaryKey;
+        public bool IsPrimaryKey
+        {
+            get { return _isPrimaryKey; }
+            set { _isPrimaryKey = value; OnPropertyChanged(); }
+        }
+        public List<Table> Tables { get; set; }
+        private string _referencedTable;
+        public string ReferencedTable
+        {
+            get { return _referencedTable; }
+            set 
+            { 
+                _referencedTable = value; 
+                OnPropertyChanged();
+            }
+        }
+        private List<string> _tableNames;
+        public List<string> TableNames
+        {
+            get { return _tableNames; }
+            set { _tableNames = value; OnPropertyChanged(); }
+        }
+        private List<string> _columnNames;
+        public List<string> ColumnNames
+        {
+            get { return _columnNames; }
+            set { _columnNames = value; OnPropertyChanged(); }
+        }
+        private string _referencedColumn;
+        public string ReferencedColumn
+        {
+            get { return _referencedColumn; }
+            set { _referencedColumn = value; OnPropertyChanged(); }
+        }
+
+
         public ICommand AddColumn => new CommandDelegate(patameter =>
         {
-            if (ColumnName == "" || Type == null)
+            if (ColumnName == "" || Type == null || IfColumnExist(ColumnName) || !CheckForeignKey())
             {
                 return;
             }
-            foreach (Column column in Columns)
-            {
-                if(column.Name == ColumnName)
+            _columns.Add(
+                new Column
                 {
-                    MessageBox.Show($"Столбец с именем {ColumnName} уже добавлен в таблицу");
-                    return;
-                }
-            }
-            _columns.Add(new Column { Name = $"{ColumnName}", Type = $"{Type}"});
+                    Name = $"{ColumnName}",
+                    Type = $"{Type}",
+                    IsPrimary = IsPrimaryKey,
+                    ReferencedTable = ReferencedTable,
+                    ReferencedColumn = ReferencedColumn
+                });
             UpdateColumns();
         });
 
+
         public ICommand CreateTable => new CommandDelegate(patameter =>
         {
-            if(FolderPath == "")
-            {
-                MessageBox.Show("Вернитесь на главное окно и выберите папку");
-                return;
-            }
-            if (TableName == "" || TableName == null || _columns.Count == 0)
+            if (TableName == "" || TableName == null || _columns.Count == 1)
             {
                 MessageBox.Show("Заполните все поля");
                 return;
             }
-            List<Column> columnsOfNewTable = new List<Column>();
-            foreach (Column column in _columns)
-            {
-                columnsOfNewTable.Add(column);
-            }
-            TableScheme scheme = new TableScheme()
-            {
-                Name = TableName,
-                Columns = columnsOfNewTable
-            };
-            string json = JsonSerializer.Serialize<TableScheme>(scheme);
-            File.WriteAllText($"{FolderPath}\\{TableName}.json", json);
-            CreateEmptyTable(scheme);
+            CreateEmptyTable(CreateJson());
             MessageBox.Show($"Таблица создана по пути {FolderPath}");
             Window.Close();
         });
+
+        public bool CheckForeignKey()
+        {
+            if(!IsPrimaryKey || ReferencedTable == null || ReferencedColumn == null)
+            {
+                ReferencedTable = null;
+                ReferencedColumn = null;
+                IsPrimaryKey = false;
+                return true;
+            }
+            if(Type == "uint")
+            {
+                return true;
+            }
+            MessageBox.Show($"Столбец с Foreign key должен быть типа uint");
+            return false;
+        }
+
+        public bool IfColumnExist(string columnName)
+        {
+            foreach (Column column in Columns)
+            {
+                if (column.Name == columnName)
+                {
+                    MessageBox.Show($"Столбец с именем {ColumnName} уже добавлен в таблицу");
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        public TableScheme CreateJson()
+        {
+            TableScheme scheme = new TableScheme()
+            {
+                Name = TableName,
+                Columns = _columns
+            };
+            string json = JsonSerializer.Serialize<TableScheme>(scheme);
+            File.WriteAllText($"{FolderPath}\\{TableName}.json", json);
+            return scheme;
+        }
 
         public void CreateEmptyTable(TableScheme scheme)
         {
@@ -119,10 +189,7 @@ namespace DummyDB.ViewModel
             {
                 return DateTime.MinValue;
             }
-            else
-            {
-                return 0;
-            }
+            return 0;
         }
 
         public void UpdateColumns()
@@ -134,5 +201,6 @@ namespace DummyDB.ViewModel
             }
             Columns = newColumns;
         }
+
     }
 }

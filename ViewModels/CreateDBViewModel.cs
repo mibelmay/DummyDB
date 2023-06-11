@@ -39,14 +39,9 @@ namespace DummyDB.ViewModel
             Path = "";
             FolderBrowserDialog openFolderDialog = new FolderBrowserDialog();
             string path = "";
-
-            if (openFolderDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+            if (openFolderDialog.ShowDialog() == DialogResult.OK)
             {
                 path = openFolderDialog.SelectedPath;
-            }
-            if (path == "")
-            {
-                return;
             }
             Path = path;
         });
@@ -58,19 +53,15 @@ namespace DummyDB.ViewModel
                 MessageBox.Show("Заполните поля");
                 return;
             }
-            string name = Name;
             string path = Path + "\\" + Name;
             if (Directory.Exists(path))
             {
                 MessageBox.Show("Такая папка уже существует");
-                Path = "";
                 return;
             }
             CreateFolder(path);
-            //Directory.CreateDirectory(path);
-            //System.Windows.MessageBox.Show($"Папка {Name} создана по пути {Path}");
-            //Window.Close();
         });
+
         private void CreateFolder(string path)
         {
             try
