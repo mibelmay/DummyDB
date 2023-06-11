@@ -48,7 +48,9 @@
             <TextBlock Text="Таблица: " Margin="10,0,0,0"/>
             <ComboBox ItemsSource="{Binding TableNames}" SelectedItem="{Binding ReferencedTable}"/>
             <TextBlock Text="Столбец: "/>
-            <ComboBox ItemsSource="{Binding ColumnNames}" SelectedItem="{Binding ReferencedColumn}"/>
+            <ComboBox SelectedItem="{Binding ReferencedColumn}">
+                <sys:String>id</sys:String>
+            </ComboBox>
 
         </WrapPanel>
 

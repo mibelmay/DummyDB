@@ -71,7 +71,6 @@ namespace DummyDB.ViewModel
             set 
             { 
                 _referencedTable = value; 
-                LoadColumnNames(_referencedTable); 
                 OnPropertyChanged();
             }
         }
@@ -203,18 +202,5 @@ namespace DummyDB.ViewModel
             Columns = newColumns;
         }
 
-        public void LoadColumnNames(string tableName)
-        {
-            List<string> names = new List<string>();
-            foreach (Table table in Tables)
-            {
-                if (table.Scheme.Name == tableName)
-                {
-                    names.Add(table.Scheme.Columns[0].Name);
-                    break;
-                }
-            }
-            ColumnNames = names;
-        }
     }
 }

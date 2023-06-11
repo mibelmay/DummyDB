@@ -168,19 +168,11 @@ namespace DummyDB.ViewModel
                 if (column.Name == DeletedColumn)
                 {
                     scheme.Columns.Remove(column);
-                    DeleteColumnFromTable(column);
+                    TableCreator.DeleteColumnFromTable(table, column);
                     break;
                 }
             }
             UpdateColumnNames();
-        }
-
-        private void DeleteColumnFromTable(Column column)
-        {
-            foreach (var row in table.Rows)
-            {
-                row.Data.Remove(column);
-            }
         }
 
         private bool IsRemovalValid()
@@ -226,30 +218,8 @@ namespace DummyDB.ViewModel
                 ReferencedColumn= ReferencedColumn
             };
             scheme.Columns.Add(newColumn);
-            AddColumnToTable(newColumn);
+            TableCreator.AddColumnToTable(table, newColumn);
             UpdateColumnNames();
-        }
-
-        private void AddColumnToTable(Column newColumn)
-        {
-            object addValue = GetDefaultValue(newColumn);
-            for (int i = 0; i < table.Rows.Count; i++)
-            {
-                table.Rows[i].Data[newColumn] = addValue;
-            }
-        }
-
-        public object GetDefaultValue(Column column)
-        {
-            if (column.Type == "string")
-            {
-                return "";
-            }
-            else if (column.Type == "datetime")
-            {
-                return DateTime.MinValue;
-            }
-            return 0;
         }
 
         public void DisplayTable()
@@ -362,37 +332,10 @@ namespace DummyDB.ViewModel
                     {
                         return false;
                     }
-                    WriteData(i, scheme.Columns[j], data);
+                    TableCreator.WriteData(table, i, scheme.Columns[j], data);
                 }
             }
             return true;
-        }
-
-        private void WriteData(int rowId, Column column, object data)
-        {
-            bool isPrimary = ReferenceChecker.CheckPrimaryKey(column);
-            if (rowId >= table.Rows.Count)
-            {
-                AddRowToTable();
-                if (isPrimary)
-                {
-                    table.Rows[rowId].Data[column] = (uint)table.Rows[rowId - 1].Data[column] + 1;
-                    return;
-                }
-            }
-            if (!isPrimary)
-            {
-                table.Rows[rowId].Data[column] = data;
-            }
-        }
-
-        private void AddRowToTable()
-        {
-            table.Rows.Add(
-                new Row()
-                {
-                    Data = new Dictionary<Column, object>()
-                });
         }
 
         private bool CheckColumnReferences(Column column, object data)
