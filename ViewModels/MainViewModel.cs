@@ -8,7 +8,6 @@ using System.Windows.Input;
 using System.Windows.Controls;
 using System.Data;
 using System.Linq;
-using System.Data.Common;
 using DummyDB_5.Models;
 
 namespace DummyDB.ViewModel
@@ -51,13 +50,13 @@ namespace DummyDB.ViewModel
         public TableScheme SelectedTable { get; set; }
         public string folderPath { get; set; }
         public List<Table> Tables { get; set; }
-        private List<string> _columnNames;
-        public List<string> ColumnNames
+        private List<string> _foreignColumnNames;
+        public List<string> ForeignColumnNames
         {
-            get { return _columnNames; }
+            get { return _foreignColumnNames; }
             set
             {
-                _columnNames = value;
+                _foreignColumnNames = value;
                 OnPropertyChanged();
             }
         }
@@ -163,7 +162,7 @@ namespace DummyDB.ViewModel
             Table table = new Table();
             foreach (TableScheme scheme in schemes)
             {
-                table = TableReader.Read(Tables, scheme, file);
+                table = TableReader.Read(scheme, file);
                 if (table == null)
                 {
                     continue;
@@ -202,7 +201,7 @@ namespace DummyDB.ViewModel
                     dataTable.TableName = tableName;
                     AddColumnsToDataTable(pair.Key.Columns, dataTable);
                     AddRowsToDataTable(pair.Value.Rows, dataTable);
-                    UpdateColumnNames(pair.Value);
+                    UpdateForeignColumnNames(pair.Value);
                     SelectedTable = pair.Key;
                     break;
                 }
@@ -211,7 +210,7 @@ namespace DummyDB.ViewModel
             SelectedDataTable = dataTable;
         }
 
-        private void UpdateColumnNames(Table table)
+        private void UpdateForeignColumnNames(Table table)
         {
             List<string> columnNames = new List<string>();
             foreach(Column column in table.Scheme.Columns)
@@ -222,7 +221,7 @@ namespace DummyDB.ViewModel
                 }
                 columnNames.Add(column.Name);
             }
-            ColumnNames = columnNames;
+            ForeignColumnNames = columnNames;
         }
 
         private void CreateForeignKeysTable(Table table, Column column)

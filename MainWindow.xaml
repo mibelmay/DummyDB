@@ -57,7 +57,7 @@
         <Button Command="{Binding ShowForeignKeys}" Content="Выбрать" Grid.Column="1" Grid.Row="4" Height="20" VerticalAlignment="Top" Margin="174,120,0,0"/>
 
         <TextBlock Text="Посмотреть внешние ключи:" Grid.Column="1" Grid.Row="4" Margin="0,60,0,0" Height="19" VerticalAlignment="Top"/>
-        <ComboBox ItemsSource="{Binding ColumnNames}" SelectedItem="{Binding SelectedColumn}" Grid.Column="1" Grid.Row="4" Height="20" Margin="0,80,85,0" VerticalAlignment="Top"/>
+        <ComboBox ItemsSource="{Binding ForeignColumnNames}" SelectedItem="{Binding SelectedColumn}" Grid.Column="1" Grid.Row="4" Height="20" Margin="0,80,85,0" VerticalAlignment="Top"/>
         <DataGrid Name="foreignKeys" ItemsSource="{Binding ForeignKeys}" Grid.Column="1" Grid.Row="4" Margin="0,147,0,0" Height="124" VerticalAlignment="Top" CanUserAddRows="False"/>
     </Grid>
 </Window>
